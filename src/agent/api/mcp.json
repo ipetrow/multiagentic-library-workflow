@@ -1,0 +1,22 @@
+{
+    "servers": {
+        "database": {
+            "command": "uv",
+            "args": [
+                "run", 
+                "-m",
+                "src.agent.api.servers.database.database_server"
+            ],
+            "env": {
+                "DATABASE_PATH": "${DATABASE_PATH}"
+            }
+        },
+        "files": {
+            "command": "uv",
+            "args": [
+                "run", 
+                "-m",
+                "src.agent.api.servers.files.files_server"]
+        }
+    }
+}
