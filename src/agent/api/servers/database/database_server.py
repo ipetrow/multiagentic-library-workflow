@@ -7,6 +7,7 @@ import sys
 from mcp.server.fastmcp import FastMCP
 
 from src.agent.domain.book import Book
+from src.agent.domain.book import ReadingStatus
 from src.agent.config import get_settings
 
 from .database import Database
