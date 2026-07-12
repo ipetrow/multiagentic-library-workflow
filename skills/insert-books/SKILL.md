@@ -8,7 +8,7 @@ Automated workflow for extracting books data from a PDF receipt and inserting it
 
 ## Workflow
 
-be concise - no lengthy explanations 
+TODO: General guidance: be concise - no lengthy explanations 
 
 ### Step 1: Plan Execution
 
