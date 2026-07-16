@@ -1,13 +1,13 @@
 from base64 import b64encode
 import os
-from pathlib import Path, Iterator
+from pathlib import Path
 
 class ReceiptRepository:
     
     def __init__(self, path: Path):
         self.path = path
 
-    def list_receipts(self) -> Iterator[Path]: 
+    def list_receipts(self): 
         return self.path.glob("*.pdf")
     
     def retrieve_receipts(self) -> list[dict]:

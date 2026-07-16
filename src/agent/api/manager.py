@@ -5,13 +5,13 @@ import os
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from .models.models import ItemKey, ItemType, ToolCallResponse
+from .models.models import ToolCallResponse
 
 class MCPManager:
 
     def __init__(self):
         self.exit_stack = AsyncExitStack()
-        self.sessions = {}
+        self._sessions = {}
 
     async def __aenter__(self):
         await self._connect_to_servers()
@@ -37,43 +37,18 @@ class MCPManager:
                 stdio_client(server_params)
             )
             self.stdio, self.write = stdio_transport
-            # read, write = stdio_transport
             session = await self.exit_stack.enter_async_context(
                 ClientSession(self.stdio, self.write)
             )
-            # client_session = await self.exit_stack.enter_async_context(ClientSession(read, write))
 
             await session.initialize()
 
-            await self._map_server_primitives_to_session(session)
+            self._sessions[server_name] = session
             await self._notify_server_connection_successful(server_name, session)
 
             return session
         except Exception as e:
             raise RuntimeError(f"Error trying to connect to MCP Server {server_name}: {e}")
-    
-    async def _map_server_primitives_to_session(self, session: ClientSession):
-        """
-        Maps the available server primitives (tools, resources) to their respective client session.
-
-        Args:
-            session: The client session to which the server primitives will be mapped.
-        """
-        try:
-            # tools
-            tools_response = await session.list_tools()
-            for tool in tools_response.tools:
-                self.sessions[ItemKey(ItemType.TOOL, tool.name)] = session
-                    
-            # resources
-            resources_response = await session.list_resources()
-            if resources_response and resources_response.resources:
-                for resource in resources_response.resources:
-                    resource_uri = str(resource.uri)
-                    self.sessions[ItemKey(ItemType.RESOURCE, resource_uri)] = session
-        
-        except Exception as e:
-            print(f"Error mapping the server primitives to the respective client session: {e}")
     
     async def _connect_to_servers(self):
         """Reads the server configuration files and established all the MCP Client-Server connections."""
@@ -85,7 +60,6 @@ class MCPManager:
             for server_name, server_config in servers.items():
                 server_config_updated = await self._resolve_server_config(server_config)
                 await self._connect_to_server(server_name, server_config_updated)
-
         except Exception as e:
             raise RuntimeError(f"Error loading the server configuration file: {e}")
 
@@ -97,31 +71,36 @@ class MCPManager:
             A list of all the available tools.
         """
 
-        tools = []
+        available_tools = []
 
-        unique_sessions = set(self.sessions.values())
-
-        for session in unique_sessions:
+        for session_name, session in self._sessions.items():
             tools_response = await session.list_tools()
-            tools.extend(tools_response.tools)
 
-        return tools
+            for tool in tools_response.tools:
+                available_tools.append(
+                    {
+                        "session_name": session_name,
+                        "tool": tool
+                    }
+                )
+
+        return available_tools
     
-    async def call_tool(self, tool_name, tool_args) -> ToolCallResponse:
+    async def call_tool(self, session_name: str, tool_name: str, tool_args) -> ToolCallResponse:
         """
         Executes a tool by specified name and arguments.
         
         Args:
+            session_name: The name of the session to which the tool belongs.
             tool_name: The name of the tool that will be executed.
             tool_args: The required arguments of the tool that will be executed.
         Returns:
             The tool response - the content and logs.
         """
 
-        session = self.sessions[ItemKey(ItemType.TOOL, tool_name)]
+        self._assert_tool_available(session_name = session_name, tool_name = tool_name)
 
-        if not session:
-            raise ValueError(f"No session found for tool with name: {tool_name}")
+        session = self._get_session(session_name)
 
         try:
             log = f"[Log: Calling tool with name = {tool_name} and args = {tool_args}]]"
@@ -133,17 +112,20 @@ class MCPManager:
 
         return ToolCallResponse(content = content, log = log)
     
-    async def get_resource(self, resource_uri: str) -> str:
+    async def get_resource(self, session_name: str, resource_uri: str) -> str:
         """
         Gets the content of a receipt pdf file as a base64 encoded string.
         
         Args:
+            session_name: The name of the session to which the resource belongs.
             resource_uri: a resource uri exposed from the mcp-server for a specific resource.
 
         Returns: the content of the pdf file in a base64 encoded string.
         """
 
-        session = await self._get_session(type = ItemType.RESOURCE, name = resource_uri)
+        self._assert_resource_available(session_name = session_name, resource_uri = resource_uri)
+
+        session = await self._get_session(name = session_name)
         
         try:
             print(f"\nRequesting the resource: {resource_uri}")
@@ -155,19 +137,42 @@ class MCPManager:
         except Exception as e:
             print(f"Error: {e}")
 
-    async def _get_session(self, type: ItemType, name: str) -> ClientSession:
+    async def _assert_tool_available(self, session_name: str, tool_name: str):
+        session = await self._get_session(name = session_name)
+        available_tools = await session.list_tools()
+
+        available_tool_names = [
+            tool.name
+            for tool in available_tools
+        ]
+
+        if tool_name in available_tool_names:
+            raise ValueError(f"No tool with name {tool_name} is available for session {session_name}")
+        
+    async def _assert_resource_available(self, session_name: str, resource_uri: str):
+        session = await self._get_session(name = session_name)
+        available_resources = await session.list_resources()
+
+        available_resource_uris = [
+            resource.uri
+            for resource in available_resources
+        ]
+
+        if resource_uri in available_resource_uris:
+            raise ValueError(f"No tool with uri {resource_uri} is available for session {session_name}")
+
+    async def _get_session(self, name: str) -> ClientSession:
         """
         Returns the corresponding session to the specified server primitive item type (tool, resource).
 
         Args:
-            type: The type of the server primitive.
             name: The session name.
 
         Returns:
             A client session.
         """
 
-        session = self.sessions[ItemKey(type, name)]
+        session = self._sessions[name]
 
         if not session:
             raise ValueError(f"No session found for {name}")
@@ -188,15 +193,15 @@ class MCPManager:
         try:
             tools_response = await session.list_tools()
             if tools_response and tools_response.tools:
-                print("\n----- Tools: ", [tool.name for tool in tools_response.tools])
+                print("----- Tools: ", [tool.name for tool in tools_response.tools])
 
             resources_response = await session.list_resources()
             if resources_response and resources_response.resources:
-                print(f"\n----- Resources: ", [resource.name for resource in resources_response.resources])
+                print(f"----- Resources: ", [resource.name for resource in resources_response.resources])
 
             prompts_response = await session.list_prompts()
             if prompts_response and prompts_response.prompts:
-                print(f"\n----- Prompts: ", [prompt.name for prompt in prompts_response.prompts])
+                print(f"----- Prompts: ", [prompt.name for prompt in prompts_response.prompts])
         except Exception as e:
             print(f"Error {e}")
 

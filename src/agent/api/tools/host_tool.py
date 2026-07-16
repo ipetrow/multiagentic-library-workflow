@@ -9,9 +9,8 @@ RETRIEVE_RECEIPT_TOOL = ToolDefinition(
         "Returns: A list of the current book receipts pdf files in a base64 encoded strings."
     ),
     input_schema = {
-        "type": "object",
         "properties": {},
-        "required": []
+        "type": "object"
     }
 )
 
@@ -22,9 +21,9 @@ class RetreiveReceiptDataTool(Tool):
         self._mcp_manager = mcp_manager
     
     async def execute(self, arguments: dict):
-        tool_result = await self._manager.read_resource( # TODO update the method signature 
-            session_name = "files"
-            uri = arguments["uri"]
+        tool_result = await self._manager.get_resource(
+            session_name = "files",
+            resource_uri = arguments["uri"]
         )
 
         return tool_result

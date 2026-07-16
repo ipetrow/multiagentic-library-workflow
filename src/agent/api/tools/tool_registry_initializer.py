@@ -7,20 +7,22 @@ from .tool_definition import ToolDefinition
 from .tool_registry import ToolRegistry
 from ..manager import MCPManager
 
-
-
 async def register_tools(
         registry: ToolRegistry,
         mcp_manager: MCPManager
-):
-    await _register_host_tools(registry, mcp_manager)
-    _register_host_tools()
+) -> ToolRegistry:
+    await _register_mcp_tools(registry, mcp_manager)
+    _register_host_tools(registry, mcp_manager)
+
+    return registry
 
 async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
 
-    available_tools = await mcp_manager.get_tools()
+    available_tools: list[dict] = await mcp_manager.get_tools()
 
-    for tool in available_tools:
+    for item in available_tools:
+        tool = item["tool"]
+
         registry.register(
             MCPTool(
                 definition = ToolDefinition(
@@ -29,7 +31,7 @@ async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
                     input_schema = tool.inputSchema
                 ), 
                 mcp_manager = mcp_manager, 
-                session_name = "" # TODO provide the session name
+                session_name = item["session_name"] # TODO provide the session name
             )
         )
     
