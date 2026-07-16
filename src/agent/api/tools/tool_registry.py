@@ -1,11 +1,12 @@
-from .base_tool import Tool
+from .tool_base import Tool
+from .tool_definition import ToolDefinition 
 
 class ToolRegistry:
 
     def __init__(self):
         self._tools: dict[str, Tool] = {}
 
-    def register(self, tool: Tool):
+    def register(self, tool: Tool) -> None:
         name = tool.definition.name
 
         if name in self._tools:
@@ -13,17 +14,14 @@ class ToolRegistry:
         
         self._tools[name] = tool
 
-    def list_definitions(self):
-        return [
-            tool.definition
-            for tool in self._tools.values()
-        ]
+    def list_definitions(self) -> list[ToolDefinition]:
+        return [tool.definition for tool in self._tools.values()]
     
-    def get_tool(self, name: str):
+    def get_tool(self, name: str) -> Tool:
         return self._tools[name]
     
-    async def execute(self, tool_name, tool_args):
+    async def execute(self, tool_name, tool_args: dict | None = None):
         tool = self._tools[tool_name]
 
-        return await tool.execute(arguments = tool_args)
+        return await tool.execute(arguments = tool_args or {})
         

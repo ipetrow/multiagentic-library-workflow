@@ -1,18 +1,15 @@
-import base64
-import os
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
 from .repository import ReceiptRepository
 
-RECEIPTS_DIR = "app/api/servers/files/receipts"
-RECEIPTS_FILE = "receipt-001.pdf"
+RECEIPTS_DIR = "src/agent/api/servers/files/receipts/inbox"
 
 # Initialize FastMCP server
 mcp = FastMCP("receipts")
 
-receipts_repository = ReceiptRepository(Path("./receipts/inbox/"))
+receipts_repository = ReceiptRepository(Path(RECEIPTS_DIR))
     
 @mcp.resource("receipt://books/inbox")
 def get_book_receipts() -> list[dict]:

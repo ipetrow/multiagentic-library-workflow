@@ -18,8 +18,6 @@ async def main():
         try:
             regsitry = await register_tools(registry = ToolRegistry(), mcp_manager = mcp)
 
-            print(regsitry.list_definitions())
-
         except Exception as e:
             print(e)
 

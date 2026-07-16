@@ -1,8 +1,8 @@
-from .host_tool import (
+from .tool_host import (
     RetreiveReceiptDataTool,
     RETRIEVE_RECEIPT_TOOL
 )
-from .mcp_tool import MCPTool
+from .tool_mcp import MCPTool
 from .tool_definition import ToolDefinition
 from .tool_registry import ToolRegistry
 from ..manager import MCPManager
@@ -31,7 +31,7 @@ async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
                     input_schema = tool.inputSchema
                 ), 
                 mcp_manager = mcp_manager, 
-                session_name = item["session_name"] # TODO provide the session name
+                session_name = item["session_name"]
             )
         )
     

@@ -98,9 +98,9 @@ class MCPManager:
             The tool response - the content and logs.
         """
 
-        self._assert_tool_available(session_name = session_name, tool_name = tool_name)
+        await self._assert_tool_available(session_name = session_name, tool_name = tool_name)
 
-        session = self._get_session(session_name)
+        session = await self._get_session(session_name)
 
         try:
             log = f"[Log: Calling tool with name = {tool_name} and args = {tool_args}]]"
@@ -123,7 +123,7 @@ class MCPManager:
         Returns: the content of the pdf file in a base64 encoded string.
         """
 
-        self._assert_resource_available(session_name = session_name, resource_uri = resource_uri)
+        await self._assert_resource_available(session_name = session_name, resource_uri = resource_uri)
 
         session = await self._get_session(name = session_name)
         
@@ -139,27 +139,27 @@ class MCPManager:
 
     async def _assert_tool_available(self, session_name: str, tool_name: str):
         session = await self._get_session(name = session_name)
-        available_tools = await session.list_tools()
+        available_tools_response = await session.list_tools()
 
         available_tool_names = [
             tool.name
-            for tool in available_tools
+            for tool in available_tools_response.tools
         ]
 
-        if tool_name in available_tool_names:
+        if tool_name not in available_tool_names:
             raise ValueError(f"No tool with name {tool_name} is available for session {session_name}")
         
     async def _assert_resource_available(self, session_name: str, resource_uri: str):
         session = await self._get_session(name = session_name)
-        available_resources = await session.list_resources()
+        available_resources_response = await session.list_resources()
 
         available_resource_uris = [
-            resource.uri
-            for resource in available_resources
+            str(resource.uri) # getting the uri as a str from an AnyUrl object
+            for resource in available_resources_response.resources
         ]
 
-        if resource_uri in available_resource_uris:
-            raise ValueError(f"No tool with uri {resource_uri} is available for session {session_name}")
+        if resource_uri not in available_resource_uris:
+            raise ValueError(f"No resource with uri {resource_uri} is available for session {session_name}")
 
     async def _get_session(self, name: str) -> ClientSession:
         """
