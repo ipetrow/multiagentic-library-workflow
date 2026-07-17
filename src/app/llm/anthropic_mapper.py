@@ -1,4 +1,4 @@
-import json
+from src.app.api.tools.tool_definition import ToolDefinition
 
 from .models.models import (
     ContextRoleItem, TextContent, FileContent, ContextToolOutputItem
@@ -83,7 +83,7 @@ class AnthropicContextMapper:
 
         return serialized_context_item
     
-    async def serialize_tools(self, available_tools: list) -> list:
+    async def serialize_tools(self, available_tools: list[ToolDefinition]) -> list[dict]:
         """
         Maps the tools to a format compatible with the Anthropic Claude Message API.
 
@@ -100,7 +100,7 @@ class AnthropicContextMapper:
                 "description": tool.description,
                 "input_schema": getattr(
                         tool,
-                        "inputSchema",
+                        "input_schema",
                         {"type": "object", "properties": {}}
                     )
             }

@@ -1,8 +1,8 @@
-import json
 import os
-from pathlib import Path 
 
 from anthropic import AnthropicFoundry
+
+from src.app.api.tools.tool_definition import ToolDefinition
 
 from .base_service import LLMService
 from .models.llm_response import ToolUse
@@ -32,7 +32,7 @@ class AnthropicService(LLMService):
         self.adapter = AnthropicContextMapper()
         self.context = []
 
-    async def process(self, context_item: ContextItem, available_tools: list = None) -> LLMResponse:
+    async def process(self, context_item: ContextItem, available_tools: list[ToolDefinition] = None) -> LLMResponse:
         """
         Handles a request to the Anthropic Claude Message API.
 
