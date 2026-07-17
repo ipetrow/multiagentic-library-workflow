@@ -3,7 +3,7 @@ import json
 
 from app.api.manager import MCPManager
 from app.domain.book import Book
-from src.agent.llm.anthropic_service import AnthropicService
+from src.app.llm.anthropic_service import AnthropicService
 from app.llm.models.models import (
     ContextRoleItem, 
     TextContent, 

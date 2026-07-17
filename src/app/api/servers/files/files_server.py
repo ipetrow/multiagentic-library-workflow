@@ -4,7 +4,7 @@ from mcp.server.fastmcp import FastMCP
 
 from .repository import ReceiptRepository
 
-RECEIPTS_DIR = "src/agent/api/servers/files/receipts/inbox"
+RECEIPTS_DIR = "src/app/api/servers/files/receipts/inbox"
 
 # Initialize FastMCP server
 mcp = FastMCP("receipts")

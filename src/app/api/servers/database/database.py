@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-from src.agent.domain.book import Book
+from src.app.domain.book import Book
 
 class Database: 
 
