@@ -5,7 +5,7 @@
             "args": [
                 "run", 
                 "-m",
-                "src.agent.api.servers.database.database_server"
+                "src.app.api.servers.database.database_server"
             ],
             "env": {
                 "DATABASE_PATH": "${DATABASE_PATH}"
@@ -16,7 +16,7 @@
             "args": [
                 "run", 
                 "-m",
-                "src.agent.api.servers.files.files_server"]
+                "src.app.api.servers.files.files_server"]
         }
     }
 }

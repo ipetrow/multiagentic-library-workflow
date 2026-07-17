@@ -1,13 +1,7 @@
-import sqlite3
-import json
-from pathlib import Path 
-from typing import List
-import sys
-
 from mcp.server.fastmcp import FastMCP
 
-from src.agent.domain.book import Book
-from src.agent.config import get_settings
+from src.app.domain.book import Book
+from src.app.config import get_settings
 
 from .database import Database
 

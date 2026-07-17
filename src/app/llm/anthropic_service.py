@@ -18,7 +18,7 @@ class AnthropicService(LLMService):
     """Handles the communication between the Anthropic Claude Message API and the MCP tool execution."""
 
     def __init__(self):
-        api_key = api_key = os.getenv("AZURE_ANTHROPIC_API_KEY")
+        api_key = os.getenv("AZURE_ANTHROPIC_API_KEY")
         if not api_key:
             raise RuntimeError(
                 "AZURE_ANTHROPIC_API_KEY environment variable is empty."
