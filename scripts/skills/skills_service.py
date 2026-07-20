@@ -75,4 +75,4 @@ class SkillsService:
         except Exception as ex:
             raise ex
         
-        print(f"Deleted the skill with id {skill_id}")
+        print(f"Deleted the skill with id {skill_id} successfully.")

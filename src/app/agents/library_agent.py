@@ -7,6 +7,7 @@ from src.app.llm.models.models import (
     ContextToolOutputItem
 )
 from src.app.llm.models.llm_response import LLMResponse
+from src.app.skills.skill_registry import SkillRegistry
 
 from .exceptions import MaxStepsExceededError
 
@@ -14,9 +15,11 @@ MAX_STEPS = 10
 
 class LibraryAgent:
 
-    def __init__(self, tool_registry: ToolRegistry, llm: LLMService):
-        self._llm = llm
+    def __init__(self, tool_registry: ToolRegistry, skill_registry: SkillRegistry, llm: LLMService):
         self._tool_registry = tool_registry
+        self._skill_registry = skill_registry
+        self._llm = llm
+        
 
     async def run(self, prompt: str):
         
