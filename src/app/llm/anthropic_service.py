@@ -1,8 +1,8 @@
-import json
 import os
-from pathlib import Path 
 
 from anthropic import AnthropicFoundry
+
+from src.app.api.tools.tool_definition import ToolDefinition
 
 from .base_service import LLMService
 from .models.llm_response import ToolUse
@@ -32,7 +32,7 @@ class AnthropicService(LLMService):
         self.adapter = AnthropicContextMapper()
         self.context = []
 
-    async def process(self, context_item: ContextItem, available_tools: list = None) -> LLMResponse:
+    async def process(self, context_item: ContextItem, available_tools: list[ToolDefinition] = None) -> LLMResponse:
         """
         Handles a request to the Anthropic Claude Message API.
 
@@ -54,15 +54,25 @@ class AnthropicService(LLMService):
 
         serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
 
-        tool_use: ToolUse = None       
+        tool_use: ToolUse = None
         assisstent_response_text = None
         try:
             response = self.anthropic.messages.create(
                     model=MODEL,
                     max_tokens=MAX_TOKENS,
-                    tools=serialized_tools,
+                    betas=["code-execution-2025-08-25", "skills-2025-10-02"],
+                    container={
+                        "skills": [
+                            {
+                                "type": "custom", 
+                                "skill_id": "skill_id", # TODO add the correct id
+                                "version": "latest"
+                            }
+                        ]
+                    },
+                    messages=self.context,
+                    tools=serialized_tools + {"type": "code_execution_20250825", "name": "code_execution"},
                     tool_choice={"type": "auto", "disable_parallel_tool_use": True},
-                    messages=self.context
                 )
         except Exception as ex:
             print(f"Exception: {ex}")

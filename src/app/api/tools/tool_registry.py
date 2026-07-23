@@ -1,3 +1,5 @@
+import logging
+
 from .tool_base import Tool
 from .tool_definition import ToolDefinition 
 
@@ -23,5 +25,10 @@ class ToolRegistry:
     async def execute(self, tool_name, tool_args: dict | None = None):
         tool = self._tools[tool_name]
 
-        return await tool.execute(arguments = tool_args or {})
-        
+        logging.info("Executing %s", tool.definition.name)
+
+        try:
+            return await tool.execute(arguments = tool_args or {})
+        except Exception as ex:
+            logging.exception("Tool with name %s failed", tool.definition.name)
+            raise ex
