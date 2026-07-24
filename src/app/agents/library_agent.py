@@ -10,6 +10,9 @@ from src.app.llm.models.llm_response import LLMResponse
 from src.app.skills.skill_registry import SkillRegistry
 
 from .exceptions import MaxStepsExceededError
+from .utils.prompts import load_prompt
+
+LIBRARY_AGENT_SYSTEM_PROMPT = load_prompt("library_agent_prompt.md")
 
 MAX_STEPS = 10
 
@@ -37,6 +40,7 @@ class LibraryAgent:
         for _ in range(MAX_STEPS):
 
             response: LLMResponse = await self._llm.process(
+                system_prompt = LIBRARY_AGENT_SYSTEM_PROMPT,
                 context_item = context_item, 
                 available_tools = self._tool_registry.list_definitions()
             )
