@@ -1,70 +1,42 @@
 ---
 name: insert-books
-description: Extracts books data from a receipt file and imports the extracted data in a database.
+description: Handles the addition of books into the library database. Use when user asks to add books to the personal library, extracted either from a direct prompt or a receipt.
 ---
 
-# Inserting Books
-Automated workflow for extracting books data from a PDF receipt and inserting it into a database functionings as a books library repository. 
+# Workflow
 
-## Workflow
+## Step 1: Plan Execution
+- Present a high-level plan for the task execution and ask the user for confirmation.
+- Only after confirmation proceed with the execution.
 
-TODO: General guidance: be concise - no lengthy explanations 
+## Step 2: Data Validation
+- Despite the data validation should have already happend, ensure it is consistent, complete and there are no entry duplications.
+- The book's author should be only one. 
+- In case of validation errors, ask the user for clarification. Explain which book is affected, what is missing or ambiguous, suggest resolution.
+- If there is an optional missing data, confirm with the user whether to continue. 
+- Do NOT invent missing book information.
 
-### Step 1: Plan Execution
-
-Before performing any action, return a step-by-step plan to carry out the user's request. Include a description of the expected MCP tools and resources to be used.
-
-Wait for User confirmation before continuing with the plan execution.
-
-### Step 2: Extract Books Data
-
-For each book in the PDF receipt resource extract the following data:
-
-- isbn
+Required Book Fields
 - title
 - author
-- number of pages
+- page number
+- reading status
 
-**Guidelines**
-- When a book has multiple authors, extract only the first one listed.
-- The extracted data should be used for all subsequent steps in the workflow.
-- All fields are required. In case of a missing or unclear fields in the PDF resource DO NOT try to assume or fill these information. Consider the PDF as a single source of truth.
+Optional Book Fields
+- ISBN
 
-### Step 3: Assert Extracted Books Data
+## Step 3: Data Insertion
+Use the `insert_books` tool for adding the books.
 
-Assert the extracted book data values for
+## Step 4: Verify Insertion is Successful
+After the insertion operation completes, use available tools to ensure the data has been successfully added.
 
-- Data duplication
-- Missing required data
+## Step 5: Report Result
+- Communicate concisely whether the task has been successful or not by listing the successful and unsuccessful book additions.
+- Do not state unconfirmed operations as successful.
 
-If the assertion fails, terminate the workflow execution and notify the User for the issue.
 
-### Step 4: Apply Data Rules
 
-For each extracted book add a `reading status` field with a default value of `not_started`. It represets that the book is new and yet to be read by the User.   
 
-### Step 5: Insert the Extracted Books Data into the Database
 
-Insert the extracted books into the database.
 
-**Guidance**
-- Use the available MCP tools to perform the required actions. For the required tool's arguments use the earlier extracted information. 
-- Provide a short reasoning why you need the MCP tools.
-
-Once the books are inserted, ensure that the operation has been successful by querying the database.
-
-**Database Schema**
-| Column | Type | Description |
-|--------|------|-------------|
-| isbn | INTEGER | Book's isbn |
-| title | TEXT | Book's title |
-| author | TEXT | Book's author |
-| pages_num | INTEGER | Book's number of pages |
-| reading_status | TEXT | Book's reading status (allowed values: 'not_started' 'in_progress', 'completed', 'paused', 'did_not_finish') |
-
-### Step 6: Report to User
-
-Communicate clearly whether the task has been successful or not. If yes, summarize
-- the extracted books data
-- the data inserted into the database
-- faced issues in the process

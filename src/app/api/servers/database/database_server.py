@@ -1,6 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 
-from src.app.domain.book import Book
+from src.app.domain.book.models import Book
 from src.app.config import get_settings
 
 from .database import Database
