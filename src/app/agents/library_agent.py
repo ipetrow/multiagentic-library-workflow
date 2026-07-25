@@ -9,7 +9,7 @@ from src.app.llm.models.models import (
 from src.app.llm.models.llm_response import LLMResponse
 from src.app.skills.skill_registry import SkillRegistry
 
-from .exceptions import MaxStepsExceededError
+from .utils.exceptions import MaxStepsExceededError
 from .utils.prompts import load_prompt
 
 LIBRARY_AGENT_SYSTEM_PROMPT = load_prompt("library_agent_prompt.md")
