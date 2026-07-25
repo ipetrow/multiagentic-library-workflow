@@ -32,7 +32,12 @@ class AnthropicService(LLMService):
         self.adapter = AnthropicContextMapper()
         self.context = []
 
-    async def process(self, context_item: ContextItem, available_tools: list[ToolDefinition] = None) -> LLMResponse:
+    async def process(
+            self, 
+            system_prompt: str,
+            context_item: ContextItem, 
+            available_tools: list[ToolDefinition] | None = None
+        ) -> LLMResponse:
         """
         Handles a request to the Anthropic Claude Message API.
 
@@ -70,6 +75,7 @@ class AnthropicService(LLMService):
                             }
                         ]
                     },
+                    system=system_prompt,
                     messages=self.context,
                     tools=serialized_tools + {"type": "code_execution_20250825", "name": "code_execution"},
                     tool_choice={"type": "auto", "disable_parallel_tool_use": True},
