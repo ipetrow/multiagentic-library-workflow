@@ -1,5 +1,5 @@
 from .tool_host import (
-    RetreiveReceiptDataTool,
+    RetrieveReceiptDataTool,
     RETRIEVE_RECEIPT_TOOL
 )
 from .tool_mcp import MCPTool
@@ -39,7 +39,7 @@ async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
 def _register_host_tools(registry: ToolRegistry, mcp_manager: MCPManager):
     
     registry.register(
-        RetreiveReceiptDataTool(
+        RetrieveReceiptDataTool(
             definition = RETRIEVE_RECEIPT_TOOL, 
             mcp_manager = mcp_manager,
         )

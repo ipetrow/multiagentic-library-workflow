@@ -11,8 +11,6 @@ from src.app.llm.anthropic_service import AnthropicService
 from src.app.agents.exceptions import MaxStepsExceededError
 from src.app.skills.skill_registry import SkillRegistry
 
-
-
 async def main():
 
     load_dotenv()
@@ -27,7 +25,7 @@ async def main():
 
             libAgent = LibraryAgent(
                 tool_registry = tools_regsitry,
-                skill_registry = skills_registry
+                skill_registry = skills_registry,
                 llm = AnthropicService()
             )
 
