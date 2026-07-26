@@ -1,3 +1,7 @@
+import json
+
+from pydantic import ValidationError
+
 from src.app.api.manager import MCPManager
 from src.app.api.models.models import ToolCallResponse
 from src.app.domain.prompt.models import Prompt, PromptType
@@ -9,6 +13,7 @@ from src.app.llm.models.models import (
     FileContent, 
 )
 from src.app.prompts.utils.prompts import load_prompt
+from src.app.llm.schemas.books_response import BooksResponse
 
 from .tool_base import Tool
 from .tool_definition import ToolDefinition
@@ -66,9 +71,25 @@ class RetrieveReceiptDataTool(Tool):
             ]
         )
 
-        books_response: LLMResponse = await self._llm.process(context_item=context_item)
+        books_response: LLMResponse = await self._llm.process(
+                context_item=context_item, 
+                system_prompt=SYSTEM_PROMPT,
+                output_schema=BooksResponse
+            )
 
-        # TODO output_schema.model_validate_json(response.content[0].text) handle the parsing and the exception
-        # Consider returning {success: false | true}
+        books_json = books_response.content[0].text
+
+        try:
+            books = BooksResponse.model_validate_json(books_json)
+
+            result = {
+                "status": "success",
+                **books.model_dump()
+            }
+        except ValidationError as error:
+            result = {
+                "status": "failure",
+                "error": str(error)
+            }
         
-        return books_response
+        return json.dumps(result)
