@@ -1,7 +1,7 @@
-import json
-
+from src.app.api.manager import MCPManager
+from src.app.api.models.models import ToolCallResponse
 from src.app.domain.prompt.models import Prompt, PromptType
-from src.app.llm.anthropic_service import AnthropicService
+from src.app.llm.base_service import LLMService
 from src.app.llm.models.llm_response import LLMResponse
 from src.app.llm.models.models import (
     ContextRoleItem, 
@@ -10,11 +10,8 @@ from src.app.llm.models.models import (
 )
 from src.app.prompts.utils.prompts import load_prompt
 
-
 from .tool_base import Tool
 from .tool_definition import ToolDefinition
-from ..manager import MCPManager
-from ..models.models import ToolCallResponse
 
 RETRIEVE_RECEIPT_TOOL = ToolDefinition(
     name = "retrieve_receipt",
@@ -39,10 +36,15 @@ class RetrieveReceiptDataTool(Tool):
     Provided to the LLM and based on the User's input, the tool allows the model to dynamicly decide when receipt data is needed.
     """
     
-    def __init__(self, definition: ToolDefinition, mcp_manager: MCPManager):
+    def __init__(
+            self, 
+            definition: ToolDefinition, 
+            mcp_manager: MCPManager,
+            llm: LLMService
+    ):
         super().__init__(definition)
         self._mcp_manager = mcp_manager
-        self._llm = AnthropicService()
+        self._llm = llm
     
     async def execute(self, arguments: dict) -> ToolCallResponse:
         resource = await self._mcp_manager.get_resource(

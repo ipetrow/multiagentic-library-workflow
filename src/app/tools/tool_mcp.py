@@ -1,7 +1,8 @@
+from src.app.api.manager import MCPManager
+from src.app.api.models.models import ToolCallResponse
+
 from .tool_base import Tool
 from .tool_definition import ToolDefinition
-from ..manager import MCPManager
-from ..models.models import ToolCallResponse
 
 class MCPTool(Tool):
 
