@@ -2,7 +2,7 @@ import os
 
 from anthropic import AnthropicFoundry
 
-from src.app.api.tools.tool_definition import ToolDefinition
+from src.app.tools.tool_definition import ToolDefinition
 
 from .base_service import LLMService
 from .models.llm_response import ToolUse
