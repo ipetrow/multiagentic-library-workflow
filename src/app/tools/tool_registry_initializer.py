@@ -1,3 +1,5 @@
+from src.app.api.manager import MCPManager
+
 from .tool_host import (
     RetrieveReceiptDataTool,
     RETRIEVE_RECEIPT_TOOL
@@ -5,7 +7,6 @@ from .tool_host import (
 from .tool_mcp import MCPTool
 from .tool_definition import ToolDefinition
 from .tool_registry import ToolRegistry
-from ..manager import MCPManager
 
 async def register_tools(
         registry: ToolRegistry,
@@ -35,7 +36,6 @@ async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
             )
         )
     
-
 def _register_host_tools(registry: ToolRegistry, mcp_manager: MCPManager):
     
     registry.register(
@@ -44,4 +44,3 @@ def _register_host_tools(registry: ToolRegistry, mcp_manager: MCPManager):
             mcp_manager = mcp_manager,
         )
     )
-    

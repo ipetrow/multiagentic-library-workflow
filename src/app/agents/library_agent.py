@@ -1,4 +1,5 @@
 from src.app.api.models.models import ToolCallResponse
+from src.app.tools.tool_host import RETRIEVE_RECEIPT_TOOL
 from src.app.tools.tool_registry import ToolRegistry
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.llm.base_service import LLMService
@@ -53,7 +54,9 @@ class LibraryAgent:
 
             # TODO if tool `insert_books` perform data validation first 
             
-            tool_result: ToolCallResponse = await self._tool_registry.execute(tool_name=tool_call.tool_name, tool_args=tool_call.tool_args)
+            tool_name = tool_call.tool_name
+
+            tool_result: ToolCallResponse = await self._tool_registry.execute(tool_name=tool_name, tool_args=tool_call.tool_args)
 
             responses.append(tool_result.log)
 

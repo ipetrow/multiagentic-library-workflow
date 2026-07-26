@@ -67,5 +67,8 @@ class RetrieveReceiptDataTool(Tool):
         )
 
         books_response: LLMResponse = await self._llm.process(context_item=context_item)
+
+        # TODO output_schema.model_validate_json(response.content[0].text) handle the parsing and the exception
+        # Consider returning {success: false | true}
         
         return books_response

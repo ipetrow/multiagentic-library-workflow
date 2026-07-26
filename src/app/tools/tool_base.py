@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
+from src.app.api.models.models import ToolCallResponse
+
 from .tool_definition import ToolDefinition
-from ..models.models import ToolCallResponse
 
 class Tool(ABC):
 
