@@ -77,10 +77,14 @@ class RetrieveReceiptDataTool(Tool):
                 output_schema=BooksResponse
             )
 
-        books_json = books_response.content[0].text
-
         try:
-            books = BooksResponse.model_validate_json(books_json)
+            books = BooksResponse.model_validate_json(books_response)
+
+            if not books:
+                result = {
+                    "status": "failure",
+                    "error": "No books were retrieved"
+                }
 
             result = {
                 "status": "success",
