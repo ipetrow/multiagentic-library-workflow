@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.app.api.models.models import ToolCallResponse
+from src.app.adapters.mcp.models.models import ToolCallResponse
 
 from .tool_definition import ToolDefinition
 

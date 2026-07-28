@@ -2,18 +2,18 @@ import json
 
 from pydantic import ValidationError
 
-from src.app.api.manager import MCPManager
-from src.app.api.models.models import ToolCallResponse
+from src.app.adapters.mcp.manager import MCPManager
+from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.domain.prompt.models import Prompt, PromptType
-from src.app.llm.base_service import LLMService
-from src.app.llm.models.llm_response import LLMResponse
-from src.app.llm.models.models import (
+from src.app.adapters.llm.base_service import LLMService
+from src.app.adapters.llm.models.llm_response import LLMResponse
+from src.app.adapters.llm.models.models import (
     ContextRoleItem, 
     TextContent, 
     FileContent, 
 )
 from src.app.prompts.utils.prompts import load_prompt
-from src.app.llm.schemas.books_response import BooksResponse
+from src.app.adapters.llm.schemas.books_response import BooksResponse
 
 from .tool_base import Tool
 from .tool_definition import ToolDefinition

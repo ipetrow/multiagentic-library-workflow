@@ -1,4 +1,4 @@
-from src.app.api.manager import MCPManager
+from src.app.adapters.mcp.manager import MCPManager
 
 from .tool_host import (
     RetrieveReceiptDataTool,
