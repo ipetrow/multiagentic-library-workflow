@@ -76,3 +76,10 @@ class SkillsService:
             raise ex
         
         print(f"Deleted the skill with id {skill_id} successfully.")
+
+    def get_skill_info(self, skill_id):
+        skill = self._anthropic.beta.skills.retrieve(skill_id=skill_id)
+
+        print(f"Skill: {skill.display_title}")
+        print(f"Latest version: {skill.latest_version}")
+        print(f"Created: {skill.created_at}")

@@ -1,6 +1,8 @@
+from src.app.api.manager import MCPManager
+from src.app.api.models.models import ToolCallResponse
+
 from .tool_base import Tool
 from .tool_definition import ToolDefinition
-from ..manager import MCPManager
 
 class MCPTool(Tool):
 
@@ -9,7 +11,7 @@ class MCPTool(Tool):
         self._mcp_manager = mcp_manager
         self._session_name = session_name
 
-    async def execute(self, arguments: dict):
+    async def execute(self, arguments: dict) -> ToolCallResponse: 
         tool_result = await self._mcp_manager.call_tool(
             tool_name = self._definition.name, 
             session_name = self._session_name,

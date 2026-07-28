@@ -1,8 +1,9 @@
 import os
 
 from anthropic import AnthropicFoundry
+from pydantic import BaseModel
 
-from src.app.api.tools.tool_definition import ToolDefinition
+from src.app.tools.tool_definition import ToolDefinition
 
 from .base_service import LLMService
 from .models.llm_response import ToolUse
@@ -35,8 +36,9 @@ class AnthropicService(LLMService):
     async def process(
             self, 
             system_prompt: str,
-            context_item: ContextItem, 
-            available_tools: list[ToolDefinition] | None = None
+            context_item: ContextItem | None = None, 
+            available_tools: list[ToolDefinition] | None = None,
+            output_schema: type[BaseModel] | None = None
         ) -> LLMResponse:
         """
         Handles a request to the Anthropic Claude Message API.
@@ -59,27 +61,16 @@ class AnthropicService(LLMService):
 
         serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
 
+        request_params = await self.build_create_message_request(
+            serialized_tools=serialized_tools, 
+            system_prompt=system_prompt, 
+            output_schema=output_schema
+        )
+
         tool_use: ToolUse = None
         assisstent_response_text = None
         try:
-            response = self.anthropic.messages.create(
-                    model=MODEL,
-                    max_tokens=MAX_TOKENS,
-                    betas=["code-execution-2025-08-25", "skills-2025-10-02"],
-                    container={
-                        "skills": [
-                            {
-                                "type": "custom", 
-                                "skill_id": "skill_id", # TODO add the correct id
-                                "version": "latest"
-                            }
-                        ]
-                    },
-                    system=system_prompt,
-                    messages=self.context,
-                    tools=serialized_tools + {"type": "code_execution_20250825", "name": "code_execution"},
-                    tool_choice={"type": "auto", "disable_parallel_tool_use": True},
-                )
+            response = self.anthropic.messages.create(**request_params)
         except Exception as ex:
             print(f"Exception: {ex}")
         
@@ -107,59 +98,40 @@ class AnthropicService(LLMService):
             response = assisstent_response_text, 
             tool_use = tool_use
         )
-    
-    def list_all_available_skills(self):
-        # List all Skills
-        skills = self.anthropic.beta.skills.list()
 
-        for skill in skills.data:
-            print(f"{skill.id}: {skill.display_title} (source: {skill.source})")
+    async def build_create_message_request(
+            self,
+            serialized_tools: list[dict],
+            system_prompt: str | None = None,
+            output_schema: type[BaseModel] | None = None
+    ) -> dict:
+        request_params = {
+            "model": MODEL,
+            "max_tokens": MAX_TOKENS,
+            "betas": ["code-execution-2025-08-25", "skills-2025-10-02"],
+            "container": {
+                "skills": [
+                    {
+                        "type": "custom", 
+                        "skill_id": "skill_id", # TODO add the correct id
+                        "version": "latest"
+                    }
+                ]
+            },  
+            "messages": self.context,
+            "tools": serialized_tools + {"type": "code_execution_20250825", "name": "code_execution"},
+            "tool_choice": {"type": "auto", "disable_parallel_tool_use": True},
+        }
 
-    def list_all_anthropic_managed_skills(self):
-        # List only custom Skills
-        skills = self.anthropic.beta.skills.list(source="anthropic")
+        if system_prompt is not None:
+            request_params["system"] = system_prompt
 
-        for skill in skills.data:
-            print(f"{skill.id}: {skill.display_title}")
+        if output_schema is not None:
+            request_params["output_config"] = {
+                "format": {
+                    "type": "json_schema",
+                    "schema": output_schema.model_json_schema()
+                }
+            }
 
-    def list_all_custom_skills(self):
-        # List only custom Skills
-        skills = self.anthropic.beta.skills.list(source="custom")
-
-        for skill in skills.data:
-            print(f"{skill.id}: {skill.display_title}")
-
-    def get_skill_info(self, skill_id):
-        skill = self.anthropic.beta.skills.retrieve(skill_id=skill_id)
-
-        print(f"Skill: {skill.display_title}")
-        print(f"Latest version: {skill.latest_version}")
-        print(f"Created: {skill.created_at}")
-
-    def create_skill(self):
-        skill = self.anthropic.beta.skills.create(
-            display_title="Insert Books",
-            files=[
-                (
-                    "insert-books/SKILL.md",
-                    open("skills/insert-books/SKILL.md", "rb"),
-                    "text/markdown"
-                )
-            ]
-        )
-
-        print(f"Created skill: {skill.id}")
-        print(f"Latest version: {skill.latest_version}")
-
-    def delete_skill(self, skill_id):
-        # Step 1: Delete all versions
-        versions = self.anthropic.beta.skills.versions.list(skill_id=skill_id)
-
-        for version in versions.data:
-            self.anthropic.beta.skills.versions.delete(
-                skill_id=skill_id,
-                version=version.version,
-            )
-
-        # Step 2: Delete the Skill
-        self.anthropic.beta.skills.delete(skill_id=skill_id)
+        return request_params

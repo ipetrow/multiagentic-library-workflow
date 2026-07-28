@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from src.app.api.models.models import ToolCallResponse
+
 from .tool_definition import ToolDefinition
 
 class Tool(ABC):
@@ -12,6 +14,6 @@ class Tool(ABC):
         return self._definition
 
     @abstractmethod
-    async def execute(self, arguments: dict):
+    async def execute(self, arguments: dict) -> ToolCallResponse:
         """Execute the tool with the provided arguments"""
         raise NotImplementedError

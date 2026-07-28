@@ -1,4 +1,4 @@
-from src.app.api.tools.tool_definition import ToolDefinition
+from src.app.tools.tool_definition import ToolDefinition
 
 from .models.models import (
     ContextRoleItem, TextContent, FileContent, ContextToolOutputItem

@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 from src.app.agents.library_agent import LibraryAgent
 from src.app.api.manager import MCPManager
-from src.app.api.tools.tool_registry_initializer import register_tools
-from src.app.api.tools.tool_registry import ToolRegistry
+from src.app.tools.tool_registry_initializer import register_tools
+from src.app.tools.tool_registry import ToolRegistry
 from src.app.llm.anthropic_service import AnthropicService
 from src.app.agents.exceptions import MaxStepsExceededError
 from src.app.skills.skill_registry import SkillRegistry
