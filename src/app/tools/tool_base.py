@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from src.app.adapters.mcp.models.models import ToolCallResponse
 
-from .tool_definition import ToolDefinition
+from .definitions.tool_definition import ToolDefinition
 
 class Tool(ABC):
 

@@ -19,7 +19,7 @@ async def main():
 
     async with MCPManager() as mcp:
         try:
-            tools_regsitry = await register_tools(registry = ToolRegistry(), mcp_manager = mcp)
+            tools_regsitry = await register_tools(registry = ToolRegistry(), mcp_manager = mcp, llm = llm)
 
             skills_registry = SkillRegistry(Path("config/skills.json"))
 

@@ -1,19 +1,20 @@
 from src.app.adapters.mcp.manager import MCPManager
+from app.services.retrieve_receipt_books import RetrieveReceiptBooksService
+from src.app.adapters.llm.anthropic_service import LLMService
 
-from .tool_host import (
-    RetrieveReceiptDataTool,
-    RETRIEVE_RECEIPT_TOOL
-)
+from .definitions.tool_definition import ToolDefinition
+from .tool_host import HostTool
 from .tool_mcp import MCPTool
-from .tool_definition import ToolDefinition
 from .tool_registry import ToolRegistry
+from .definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
 
 async def register_tools(
         registry: ToolRegistry,
-        mcp_manager: MCPManager
+        mcp_manager: MCPManager,
+        llm: LLMService
 ) -> ToolRegistry:
     await _register_mcp_tools(registry, mcp_manager)
-    _register_host_tools(registry, mcp_manager)
+    _register_host_tools(registry, mcp_manager, llm)
 
     return registry
 
@@ -36,11 +37,11 @@ async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
             )
         )
     
-def _register_host_tools(registry: ToolRegistry, mcp_manager: MCPManager):
+def _register_host_tools(registry: ToolRegistry, mcp_manager: MCPManager, llm: LLMService):
     
     registry.register(
-        RetrieveReceiptDataTool(
-            definition = RETRIEVE_RECEIPT_TOOL, 
-            mcp_manager = mcp_manager,
+        HostTool(
+            definition=RETRIEVE_RECEIPT_BOOKS_TOOL,
+            handler=RetrieveReceiptBooksService(mcp_manager=mcp_manager, llm=llm)
         )
     )

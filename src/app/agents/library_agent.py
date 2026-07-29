@@ -1,5 +1,5 @@
 from src.app.adapters.mcp.models.models import ToolCallResponse
-from src.app.tools.tool_host import RETRIEVE_RECEIPT_TOOL
+from src.app.tools.definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
 from src.app.tools.tool_registry import ToolRegistry
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.adapters.llm.base_service import LLMService
