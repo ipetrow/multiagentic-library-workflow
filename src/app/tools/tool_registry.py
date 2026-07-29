@@ -1,7 +1,7 @@
 import logging
 
 from .tool_base import Tool
-from .tool_definition import ToolDefinition 
+from .definitions.tool_definition import ToolDefinition 
 
 class ToolRegistry:
 
