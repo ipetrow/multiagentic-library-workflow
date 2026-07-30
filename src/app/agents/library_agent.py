@@ -21,7 +21,7 @@ from src.app.tools.tool_registry import ToolRegistry
 
 from .exceptions import MaxStepsExceededError
 from .models.models import BooksValidationResult
-from .utils.utils import prepare_books_insertion
+from .utils.utils import validate_extracted_books
 
 SYSTEM_PROMPT = load_prompt(Prompt(type=PromptType.AGENT, filename="library_agent_prompt.md"))
 
@@ -50,31 +50,32 @@ class LibraryAgent:
 
         for _ in range(MAX_STEPS):
 
-            response: LLMResponse = await self._llm.process(
+            llm_response: LLMResponse = await self._llm.process(
                 system_prompt = SYSTEM_PROMPT,
                 context_item = context_item, 
                 available_tools = self._tool_registry.list_definitions()
             )
 
-            tool_call = response.tool_use
-            if response.is_final: # no function calls - agentic loop termination
-                responses.append(response.response)
+            tool_call = llm_response.tool_use
+            if llm_response.is_final: # no function calls - agentic loop termination
+                responses.append(llm_response.response)
                 break
             
             tool_name = tool_call.tool_name
 
-            # if tool_name == RETRIEVE_RECEIPT_DATA_TOOL.name:
-            #     tool_result: ToolCallResponse = await self._tool_registry.execute(
-            #         tool_name=tool_name, 
-            #         tool_args=tool_call.tool_args,
-            #     )
-
             if tool_name == "insert_books":
                 # books_dict: dict = json.loads(tool_call.tool_args)
 
-                extracted_books: ExtractedBooks = ExtractedBooks.model_validate_json(response.response)
+                extracted_books: ExtractedBooks = ExtractedBooks.model_validate_json(llm_response.response)
                         
-                # validation_result: BooksValidationResult = prepare_books_insertion(extracted_books.books)
+                validation_result: BooksValidationResult = validate_extracted_books(extracted_books.books)
+
+                if not validation_result.valid:
+                    context_item = ContextToolOutputItem(
+                                    tool_call_id=tool_call.call_id,
+                                    tool_output= # convert to dict and json string afterwards
+                                )
+                    continue
 
             tool_result: ToolCallResponse = await self._tool_registry.execute(tool_name=tool_name, tool_args=tool_call.tool_args)
 

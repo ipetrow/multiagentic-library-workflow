@@ -6,7 +6,7 @@ class Book:
     isbn: int | None = None
     title: str
     author: str
-    pages_num: int | None = None
+    pages_num: int
     reading_status: ReadingStatus
 
     @classmethod

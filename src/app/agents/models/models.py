@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from src.app.domain.book.models import Book
+from src.app.schemas.extracted_book import ExtractedBook
 
+@dataclass
+class BookValidationResult:
+    valid: bool
+    normalized_book: ExtractedBook
+    errors: list[str]
+
+@dataclass
 class BooksValidationResult:
     valid: bool
-    normalized_book: Book | None
-    errors: list[str]
+    results: list[BookValidationResult]
