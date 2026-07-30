@@ -3,10 +3,10 @@ from enum import Enum
 
 @dataclass
 class Book:
-    isbn: int
+    isbn: int | None = None
     title: str
     author: str
-    pages_num: int
+    pages_num: int | None = None
     reading_status: ReadingStatus
 
     @classmethod

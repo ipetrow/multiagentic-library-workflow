@@ -1,18 +1,27 @@
+import json
+
 from src.app.adapters.llm.base_service import LLMService
-from src.app.adapters.llm.models.llm_response import LLMResponse
-from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.models.models import (
     ContextRoleItem, 
     TextContent, 
     ContextToolOutputItem
 )
+from src.app.adapters.mcp.models.models import ToolCallResponse
+from src.app.adapters.llm.models.llm_response import LLMResponse
+from src.app.domain.book.models import Book
+from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.prompts.utils.prompts import load_prompt
+from src.app.schemas.extracted_book import ExtractedBooks
 from src.app.skills.skill_registry import SkillRegistry
 from src.app.tools.definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
+from src.app.tools.tool_host import RETRIEVE_RECEIPT_DATA_TOOL
+from src.app.tools.tool_registry import ToolRegistry
 from src.app.tools.tool_registry import ToolRegistry
 
 from .exceptions import MaxStepsExceededError
+from .models.models import BooksValidationResult
+from .utils.utils import prepare_books_insertion
 
 SYSTEM_PROMPT = load_prompt(Prompt(type=PromptType.AGENT, filename="library_agent_prompt.md"))
 
@@ -51,14 +60,23 @@ class LibraryAgent:
             if response.is_final: # no function calls - agentic loop termination
                 responses.append(response.response)
                 break
-
-            # TODO if tool `insert_books` perform data validation first 
             
             tool_name = tool_call.tool_name
 
-            tool_result: ToolCallResponse = await self._tool_registry.execute(tool_name=tool_name, tool_args=tool_call.tool_args)
+            # if tool_name == RETRIEVE_RECEIPT_DATA_TOOL.name:
+            #     tool_result: ToolCallResponse = await self._tool_registry.execute(
+            #         tool_name=tool_name, 
+            #         tool_args=tool_call.tool_args,
+            #     )
 
-            responses.append(tool_result.log)
+            if tool_name == "insert_books":
+                # books_dict: dict = json.loads(tool_call.tool_args)
+
+                extracted_books: ExtractedBooks = ExtractedBooks.model_validate_json(response.response)
+                        
+                # validation_result: BooksValidationResult = prepare_books_insertion(extracted_books.books)
+
+            tool_result: ToolCallResponse = await self._tool_registry.execute(tool_name=tool_name, tool_args=tool_call.tool_args)
 
             context_item = ContextToolOutputItem(
                 tool_call_id=tool_call.call_id,
@@ -68,3 +86,7 @@ class LibraryAgent:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
         
         return "\n".join(responses)
+
+    async def handle_insert_books_request(self):
+
+        pass
