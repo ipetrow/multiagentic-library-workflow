@@ -1,7 +1,9 @@
 import json
 import sqlite3
 
-from src.app.domain.book.models import Book
+from .exceptions import BookNotFoundError
+
+from src.app.domain.book.models import Book, ReadingStatus
 
 class Database: 
 
@@ -40,37 +42,72 @@ class Database:
 
             books_json = json.dumps(response, indent=2)
 
-            conn.commit()
-
         return books_json
 
-    def insert_books(self, books: list[Book]) -> None:
+    def insert_book(self, book: Book) -> int:
         """
-        Insert new books in the database.
+        Insert a new book in the database.
 
         Args: 
-            books: A list with all the books to be inserted.
+            book: A book to be inserted.
 
         Returns:
-            None
+            id: The inserted book id
         """
 
         query="""
             INSERT INTO books (
-                isbn, title, author, pages_num
-            ) VALUES (?, ?, ?, ?)
+                isbn, title, author, pages_num, reading_status
+            ) VALUES (?, ?, ?, ?, ?)
         """
-
-        values = [
-            (book.isbn, book.title, book.author, book.pages_num)
-            for book in books
-        ]
 
         with self.connect() as conn:
             cur = conn.cursor()
-            cur.executemany(query, values)
+            cur.execute(query, (book.isbn, book.title, book.author, book.pages_num, book.reading_status))
             conn.commit()
+
+            return cur.lastrowid
+
+    def is_duplicate(self, title: str, author: str) -> bool:
+        query = """
+            SELECT 1 
+            FROM books
+            WHERE title = ? AND author = ?
+            LIMIT 1
+        """
+
+        with self.connect() as conn:
+            cur = conn.cursor()
+            return cur.execute(query, (title, author)).fetchone() is not None
     
+    def update_reading_status(self, book_id: int, reading_status: ReadingStatus) -> None:
+
+        query = """
+            UPDATE books 
+            SET reading_status = ? 
+            WHERE id = ?
+        """
+
+        with self.connect() as conn:
+            cur = conn.cursor().execute(query, (reading_status, book_id))
+
+            if cur.rowcount == 0:
+                raise BookNotFoundError()
+
+            conn.commit()
+
+    def get_id(self, title: str, author: str) -> int | None:
+        query="""
+            SELECT id 
+            FROM books
+            WHERE title = ? AND author = ?
+        """
+
+        with self.connect() as conn:
+            row = conn.cursor().execute(query, (title, author)).fetchone()
+
+        return row[0] if row else None
+
     def delete_books_data(self) -> None:
         """
         Delete the books data.
@@ -83,4 +120,4 @@ class Database:
 
         with self.connect() as conn:
             conn.cursor().execute(query)
-            conn.commit
+            conn.commit()
