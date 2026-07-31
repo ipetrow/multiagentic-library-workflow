@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from enum import Enum
 
 @dataclass
@@ -12,6 +12,9 @@ class Book:
     @classmethod
     def from_dict(cls, book_data: dict) -> Book:
         return cls(**book_data)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
     
 class ReadingStatus(str, Enum):
     NOT_STARTED = "not_started"

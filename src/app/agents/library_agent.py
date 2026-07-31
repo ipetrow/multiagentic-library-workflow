@@ -20,8 +20,14 @@ from src.app.tools.tool_registry import ToolRegistry
 from src.app.tools.tool_registry import ToolRegistry
 
 from .exceptions import MaxStepsExceededError
-from .models.models import BooksValidationResult
-from .utils.utils import validate_extracted_books
+from .models.models import (
+    BooksValidationResult, 
+    BookValidationResult
+)
+from .utils.utils import (
+    prepare_books_insertion,
+    validate_extracted_books
+)
 
 SYSTEM_PROMPT = load_prompt(Prompt(type=PromptType.AGENT, filename="library_agent_prompt.md"))
 
@@ -62,22 +68,32 @@ class LibraryAgent:
                 break
             
             tool_name = tool_call.tool_name
+            tool_args = tool_call.tool_args
 
             if tool_name == "insert_books":
-                # books_dict: dict = json.loads(tool_call.tool_args)
-
                 extracted_books: ExtractedBooks = ExtractedBooks.model_validate_json(llm_response.response)
                         
-                validation_result: BooksValidationResult = validate_extracted_books(extracted_books.books)
-
-                if not validation_result.valid:
+                validation_results: BooksValidationResult = validate_extracted_books(extracted_books.books)
+                if not validation_results.valid:
+                    validation_results_dict = [result.to_dict() for result in validation_results.results]
                     context_item = ContextToolOutputItem(
-                                    tool_call_id=tool_call.call_id,
-                                    tool_output= # convert to dict and json string afterwards
+                                    tool_call_id = tool_call.call_id,
+                                    tool_output = json.dumps(validation_results_dict)
                                 )
                     continue
 
-            tool_result: ToolCallResponse = await self._tool_registry.execute(tool_name=tool_name, tool_args=tool_call.tool_args)
+                extracted_validated_books = [result.normalized_book for result in validation_results.results]
+                books_for_insertion = prepare_books_insertion(extracted_validated_books)
+
+                books_for_insertion_dict = {
+                    "books": [book.to_dict() for book in books_for_insertion]
+                }
+                tool_args = json.dumps(books_for_insertion_dict)
+
+            tool_result: ToolCallResponse = await self._tool_registry.execute(
+                tool_name=tool_name, 
+                tool_args=tool_args
+            )
 
             context_item = ContextToolOutputItem(
                 tool_call_id=tool_call.call_id,

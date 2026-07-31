@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from enum import Enum
 
 from src.app.schemas.extracted_book import ExtractedBook
@@ -8,6 +8,9 @@ class BookValidationResult:
     valid: bool
     normalized_book: ExtractedBook
     errors: list[str]
+
+    def to_dict(self) -> dict:
+        return asdict(self)
 
 @dataclass
 class BooksValidationResult:

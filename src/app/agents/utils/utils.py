@@ -1,13 +1,16 @@
 from src.app.schemas.extracted_book import ExtractedBook
-from src.app.domain.book.models import Book
+from src.app.domain.book.models import Book, ReadingStatus
 
 from ..models.models import (
     BookValidationResult,
     BooksValidationResult
 )
 
-def prepare_books_insertion(extracted_books: list[ExtractedBook]) -> list[Book]:
-    pass
+def prepare_books_insertion(validated_extracted_books: list[ExtractedBook]) -> list[Book]:
+    return [
+        validated_book.to_book(reading_status=ReadingStatus.NOT_STARTED) 
+        for validated_book in validated_extracted_books
+    ]
 
 def validate_extracted_books(extracted_books: list[ExtractedBook]) -> BooksValidationResult:
 
