@@ -15,7 +15,6 @@ from src.app.prompts.utils.prompts import load_prompt
 from src.app.schemas.extracted_book import ExtractedBooks
 from src.app.skills.skill_registry import SkillRegistry
 from src.app.tools.definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
-from src.app.tools.tool_host import RETRIEVE_RECEIPT_DATA_TOOL
 from src.app.tools.tool_registry import ToolRegistry
 from src.app.tools.tool_registry import ToolRegistry
 

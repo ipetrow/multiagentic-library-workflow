@@ -93,6 +93,8 @@ class AnthropicService(LLMService):
                     tool_args = content_item.input,
                     call_id = content_item.id
                 )
+            elif content_item.type == "output_json":
+                assisstent_response_text = content_item.value
        
         return LLMResponse(
             response = assisstent_response_text, 
@@ -119,7 +121,7 @@ class AnthropicService(LLMService):
                 ]
             },  
             "messages": self.context,
-            "tools": serialized_tools + {"type": "code_execution_20250825", "name": "code_execution"},
+            "tools": serialized_tools + [{"type": "code_execution_20250825", "name": "code_execution"}],
             "tool_choice": {"type": "auto", "disable_parallel_tool_use": True},
         }
 

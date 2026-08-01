@@ -54,7 +54,7 @@ class MCPManager:
         """Reads the server configuration files and established all the MCP Client-Server connections."""
 
         try:
-            with open("src/app/api/mcp.json", "r") as file:
+            with open("src/app/adapters/mcp/mcp.json", "r") as file:
                 data = json.load(file)
             servers = data.get("servers", {})
             for server_name, server_config in servers.items():
@@ -159,7 +159,7 @@ class MCPManager:
         ]
 
         if resource_uri not in available_resource_uris:
-            raise ValueError(f"No resource with uri {resource_uri} is available for session {session_name}")
+            print(f"No resource with uri {resource_uri} is available for session {session_name}")
 
     async def _get_session(self, name: str) -> ClientSession:
         """

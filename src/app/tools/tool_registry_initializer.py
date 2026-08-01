@@ -1,5 +1,5 @@
 from src.app.adapters.mcp.manager import MCPManager
-from app.services.retrieve_receipt_books import RetrieveReceiptBooksService
+from src.app.services.retrieve_receipt_books import RetrieveReceiptBooksService
 from src.app.adapters.llm.anthropic_service import LLMService
 
 from .definitions.tool_definition import ToolDefinition

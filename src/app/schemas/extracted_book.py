@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from domain.book.models import Book, ReadingStatus
+from src.app.domain.book.models import Book, ReadingStatus
 
 class ExtractedBook(BaseModel):
     isbn: int | None = None
@@ -10,11 +10,11 @@ class ExtractedBook(BaseModel):
 
     def to_book(self, reading_status: ReadingStatus) -> Book:
         return Book(
-            isbn=self.isbn,
             title=self.title,
             author=self.author,
             pages_num=self.pages_num,
-            reading_status=reading_status
+            reading_status=reading_status,
+            isbn=self.isbn
         )
 
 class ExtractedBooks(BaseModel):

@@ -3,11 +3,11 @@ from enum import Enum
 
 @dataclass
 class Book:
-    isbn: int | None = None
     title: str
     author: str
     pages_num: int
     reading_status: ReadingStatus
+    isbn: int | None = None
 
     @classmethod
     def from_dict(cls, book_data: dict) -> Book:
