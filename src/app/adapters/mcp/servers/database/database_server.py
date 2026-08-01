@@ -26,6 +26,15 @@ def get_all_books() -> str:
 
 @mcp.tool()
 def insert_books(books: list[Book]) -> str:
+    """
+        Insert new books to the database.
+
+        Args: 
+            books: A list with all the books to be inserted.
+
+        Returns:
+            The result of the insert operation in a JSON string format.
+    """
     inserted_books = {
         "books_insertion_status": []
     }
@@ -56,29 +65,46 @@ def insert_books(books: list[Book]) -> str:
     return json.dumps(inserted_books)
 
 @mcp.tool()
-def update_book_reading_status(book: Book, reading_status: ReadingStatus) -> str:
-    book_id = db.get_id(title=book.title, author=book.author)
+def update_book_reading_status(
+    title: str, 
+    author: str, 
+    reading_status: ReadingStatus, 
+    new_reading_status: ReadingStatus
+) -> str:
+    """
+        Update book's reading status by title and author
+
+        Args: 
+            title: book's title
+            author: book's author
+            reading_status: book's reading status
+            new_reading_status: the new reading status with which the book will be update
+        Returns:
+            The result of the update operation in a JSON string format.
+    """
+
+    book_id = db.get_id(title=title, author=author)
 
     if book_id is None:
         update_status = {
             "success": False,
             "book": {
-                "title": book.title,
-                "author": book.author,
-                "reading_status": book.reading_status
+                "title": title,
+                "author": author,
+                "reading_status": reading_status
             },
             "error": "BookNotFoundError",
             "message": "Book not found in database."
         }
         
     try:
-        db.update_reading_status(book_id=book_id, reading_status=reading_status)
+        db.update_reading_status(book_id=book_id, reading_status=new_reading_status)
         update_status = {
             "success": True,
             "book": {
-                "title": book.title,
-                "author": book.author,
-                "reading_status": book.reading_status
+                "title": title,
+                "author": author,
+                "reading_status": new_reading_status
             },
             "message": "Book reading status updated successfully."
         }
@@ -86,9 +112,9 @@ def update_book_reading_status(book: Book, reading_status: ReadingStatus) -> str
         update_status = {
             "success": False,
             "book": {
-                "title": book.title,
-                "author": book.author,
-                "reading_status": book.reading_status
+                "title": title,
+                "author": author,
+                "reading_status": reading_status
             },
             "error": "BookNotFoundError",
             "message": "Book not found in database."
