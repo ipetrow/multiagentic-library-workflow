@@ -1,5 +1,7 @@
 import logging
 
+from src.app.api.models.models import ToolCallResponse
+
 from .tool_base import Tool
 from .definitions.tool_definition import ToolDefinition 
 
@@ -22,7 +24,7 @@ class ToolRegistry:
     def get_tool(self, name: str) -> Tool:
         return self._tools[name]
     
-    async def execute(self, tool_name, tool_args: dict | None = None):
+    async def execute(self, tool_name, tool_args: dict | None = None) -> ToolCallResponse:
         tool = self._tools[tool_name]
 
         logging.info("Executing %s", tool.definition.name)
