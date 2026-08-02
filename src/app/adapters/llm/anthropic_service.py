@@ -51,7 +51,63 @@ class AnthropicService(LLMService):
             The response from the Anthropic request. 
         """
 
+        serialized_tools = await self._serialize_create_message_items(context_item, available_tools)
+
+        request_params = await self._build_create_message(
+            serialized_tools=serialized_tools, 
+            system_prompt=system_prompt, 
+            output_schema=output_schema
+        )
+
+        try:
+            response = self.anthropic.messages.create(**request_params)
+        except Exception as ex:
+            print(f"Exception: {ex}")
+
+        return await self._process_response(response)
+
+    async def process_beta(
+            self, 
+            system_prompt: str,
+            context_item: ContextItem | None = None, 
+            available_tools: list[ToolDefinition] | None = None,
+            output_schema: type[BaseModel] | None = None
+        ) -> LLMResponse:
+        """
+        Handles a request to the Anthropic Claude Message API.
+
+        Args:
+            context_item: the context item which will be appened to the context history (contains e.g., prompt, tools response).
+            available_tools: the available tools the execution of which the LLM might request.
+
+        Returns:
+            The response from the Anthropic request. 
+        """
+
+        serialized_tools = await self._serialize_create_message_items(context_item, available_tools)
+
+        request_params = await self._build_create_beta_message(
+            serialized_tools=serialized_tools, 
+            system_prompt=system_prompt, 
+            output_schema=output_schema
+        )
+
+        try:
+            response = self.anthropic.beta.messages.create(**request_params)
+        except Exception as ex:
+            print(f"Exception: {ex}")
+
+        return await self._process_response(response)
+        
+    async def _serialize_create_message_items(
+            self, 
+            context_item: ContextItem | None = None, 
+            available_tools: list[ToolDefinition] | None = None
+        ) -> list[dict]:
+
+        # serialize context
         item: ContextItem = None
+
         if isinstance(context_item, ContextRoleItem):
             item = await self.adapter.serialize_context_role_item(context_item)
         elif isinstance(context_item, ContextToolOutputItem):
@@ -59,27 +115,21 @@ class AnthropicService(LLMService):
 
         self.context.append(item)
 
+        # serialize tools
         serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
 
-        request_params = await self.build_create_message_request(
-            serialized_tools=serialized_tools, 
-            system_prompt=system_prompt, 
-            output_schema=output_schema
-        )
+        return serialized_tools
 
-        tool_use: ToolUse = None
-        assisstent_response_text = None
-        try:
-            response = self.anthropic.messages.create(**request_params)
-        except Exception as ex:
-            print(f"Exception: {ex}")
-        
+    async def _process_response(self, response) -> LLMResponse:
         self.context.append(
             {
                 "role": "assistant",
                 "content": response.content
             }
         )
+
+        tool_use: ToolUse = None
+        assisstent_response_text = None
 
         # hadle all output items
         for content_item in response.content:
@@ -95,13 +145,32 @@ class AnthropicService(LLMService):
                 )
             elif content_item.type == "output_json":
                 assisstent_response_text = content_item.value
-       
+    
         return LLMResponse(
             response = assisstent_response_text, 
             tool_use = tool_use
         )
 
-    async def build_create_message_request(
+    async def _build_create_message(
+            self,
+            serialized_tools: list[dict],
+            system_prompt: str | None = None,
+            output_schema: type[BaseModel] | None = None
+    ) -> dict:
+        request_params = {
+            "model": MODEL,
+            "max_tokens": MAX_TOKENS, 
+            "messages": self.context,
+            "tools": serialized_tools,
+            "tool_choice": {"type": "auto", "disable_parallel_tool_use": True},
+        }
+
+        request_params = await self._add_system_prompt_param(request_params=request_params, system_prompt=system_prompt)
+        request_params = await self._add_output_schema_param(request_params=request_params, output_schema=output_schema)
+
+        return request_params
+
+    async def _build_create_beta_message(
             self,
             serialized_tools: list[dict],
             system_prompt: str | None = None,
@@ -125,8 +194,24 @@ class AnthropicService(LLMService):
             "tool_choice": {"type": "auto", "disable_parallel_tool_use": True},
         }
 
+        request_params = await self._add_system_prompt_param(
+            request_params=request_params, 
+            system_prompt=system_prompt
+        )
+        request_params = await self._add_output_schema_param(
+            request_params=request_params, 
+            output_schema=output_schema
+        )
+
+        return request_params
+
+    async def _add_system_prompt_param(self, request_params: dict, system_prompt: str | None = None) -> dict:
+
         if system_prompt is not None:
             request_params["system"] = system_prompt
+        return request_params
+
+    async def _add_output_schema_param(self, request_params: dict, output_schema: type[BaseModel] | None = None) -> dict:
 
         if output_schema is not None:
             request_params["output_config"] = {
@@ -135,5 +220,4 @@ class AnthropicService(LLMService):
                     "schema": output_schema.model_json_schema()
                 }
             }
-
         return request_params
