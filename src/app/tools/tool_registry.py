@@ -1,6 +1,6 @@
 import logging
 
-from src.app.api.models.models import ToolCallResponse
+from src.app.adapters.mcp.models.models import ToolCallResponse
 
 from .tool_base import Tool
 from .definitions.tool_definition import ToolDefinition 

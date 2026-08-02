@@ -15,7 +15,6 @@ from src.app.prompts.utils.prompts import load_prompt
 from src.app.schemas.extracted_book import ExtractedBooks
 from src.app.skills.skill_registry import SkillRegistry
 from src.app.tools.definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
-from src.app.tools.tool_host import RETRIEVE_RECEIPT_DATA_TOOL
 from src.app.tools.tool_registry import ToolRegistry
 from src.app.tools.tool_registry import ToolRegistry
 
@@ -56,7 +55,7 @@ class LibraryAgent:
 
         for _ in range(MAX_STEPS):
 
-            llm_response: LLMResponse = await self._llm.process(
+            llm_response: LLMResponse = await self._llm.process_beta(
                 system_prompt = SYSTEM_PROMPT,
                 context_item = context_item, 
                 available_tools = self._tool_registry.list_definitions()
