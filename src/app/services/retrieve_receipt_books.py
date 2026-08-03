@@ -3,6 +3,7 @@ import json
 from pydantic import ValidationError
 
 from src.app.adapters.mcp.manager import MCPManager
+from src.app.adapters.mcp.models.models import Receipt
 from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.base_service import LLMService
 from src.app.adapters.llm.models.llm_response import LLMResponse
@@ -42,8 +43,9 @@ class RetrieveReceiptBooksService(Handler):
         resource = await self._mcp_manager.get_resource(
             session_name = "files",
             resource_uri = RESOURCE_NAME
-            # resource_uri = arguments["uri"]
         )
+
+        receipt: Receipt = Receipt.model_validate_json(resource)
 
         context_item = ContextRoleItem(
             role="user",
@@ -53,7 +55,7 @@ class RetrieveReceiptBooksService(Handler):
                 ),
                 FileContent(
                     file_name=RESOURCE_NAME,
-                    file_data=resource
+                    file_data=receipt.content
                 )
             ]
         )
@@ -83,4 +85,4 @@ class RetrieveReceiptBooksService(Handler):
                 "error": str(error)
             }
         
-        return ToolCallResponse(content = json.dumps(result), log = log)    
+        return ToolCallResponse(content = json.dumps(result), log = log)

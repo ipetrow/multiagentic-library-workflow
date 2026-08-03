@@ -3,43 +3,30 @@ from pathlib import Path
 
 class ReceiptRepository:
     
-    def __init__(self, path: Path):
-        self.path = path
-
-    def list_receipts(self): 
-        return self.path.glob("*.pdf")
+    def __init__(self, receipts_dir: Path):
+        self._receipts_dir = receipts_dir
     
-    def retrieve_receipts(self) -> list[dict]:
+    def _find_receipt(self) -> Path:
+        receipt = next(self._receipts_dir.glob("*.pdf"), None)
 
-        receipts = []
+        if receipt is None:
+            raise FileNotFoundError(
+                f"No receipt found in {self._receipts_dir!r}"
+            )
 
-        for pdf in self.list_receipts():
-            try:
-                with open(pdf, "rb") as pdf_file:
-                    data = pdf_file.read()
-                    file_base64 = b64encode(data).decode("utf-8")
+        return receipt
 
-                    receipts.append({
-                        "filename": pdf.name,
-                        "content": file_base64
-                    })
-            except FileNotFoundError as e:
-                print(f"Error reading {pdf}: {str(e)}")
+    def retrieve_receipt(self) -> dict:
+        receipt = self._find_receipt()
 
-        return receipts
+        try:
+            with open(receipt, "rb") as pdf_file:
+                data = pdf_file.read()
+                file_base64 = b64encode(data).decode("utf-8")
+        except FileNotFoundError as e:
+            print(f"Error reading {pdf_file!r}: {str(e)}")
 
-
-
-            
-
-
-"""
-Gets the content of a receipt pdf file.
-
-Returns: the content of the pdf file in a base64 encoded string.   
-"""
-
-
-
-    
-    
+        return {
+            "file_name": receipt.name,
+            "content": file_base64
+        }  
