@@ -147,7 +147,7 @@ class MCPManager:
         ]
 
         if tool_name not in available_tool_names:
-            raise ValueError(f"No tool with name {tool_name} is available for session {session_name}")
+            raise ValueError(f"No tool with name {tool_name!r} is available for session {session_name!r}")
         
     async def _assert_resource_available(self, session_name: str, resource_uri: str):
         session = await self._get_session(name = session_name)
@@ -159,7 +159,7 @@ class MCPManager:
         ]
 
         if resource_uri not in available_resource_uris:
-            print(f"No resource with uri {resource_uri} is available for session {session_name}")
+            print(f"No resource with uri {resource_uri!r} is available for session {session_name!r}")
 
     async def _get_session(self, name: str) -> ClientSession:
         """

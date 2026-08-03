@@ -4,24 +4,22 @@ from mcp.server.fastmcp import FastMCP
 
 from .repository import ReceiptRepository
 
-RECEIPTS_DIR = "src/app/api/servers/files/receipts/inbox"
+RECEIPTS_DIR = "src/app/adapters/mcp/servers/files/receipts/inbox"
 
 # Initialize FastMCP server
 mcp = FastMCP("receipts")
 
-receipts_repository = ReceiptRepository(Path(RECEIPTS_DIR))
+receipt_repository = ReceiptRepository(Path(RECEIPTS_DIR))
     
 @mcp.resource("receipt://books/inbox")
-def get_book_receipts() -> list[dict]:
+def get_book_receipt() -> dict:
     """
-    Gets the content of a receipt pdf files.
+    Gets the content of a receipt pdf file.
 
-    Returns: the content of the pdf files in a base64 encoded string.   
+    Returns: the content of the pdf file in a base64 encoded string.   
     """
 
-    return {
-        "receipts": receipts_repository.retrieve_receipts() 
-    }
+    return receipt_repository.retrieve_receipt()
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
