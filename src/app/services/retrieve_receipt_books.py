@@ -38,7 +38,7 @@ class RetrieveReceiptBooksService(Handler):
         self._llm = llm
     
     async def execute(self, arguments: dict) -> ToolCallResponse:
-        log = f"[Log: Calling tool with name = {RETRIEVE_RECEIPT_BOOKS_TOOL.name}]"
+        log = f"[Log: Calling tool with name '{RETRIEVE_RECEIPT_BOOKS_TOOL.name}']"
 
         resource = await self._mcp_manager.get_resource(
             session_name = "files",
@@ -60,14 +60,14 @@ class RetrieveReceiptBooksService(Handler):
             ]
         )
 
-        books_response: LLMResponse = await self._llm.process(
+        llm_response: LLMResponse = await self._llm.process(
                 context_item=context_item, 
                 system_prompt=SYSTEM_PROMPT,
                 output_schema=ExtractedBooks
             )
 
         try:
-            books = ExtractedBooks.model_validate_json(books_response)
+            books = ExtractedBooks.model_validate_json(llm_response.response)
 
             if not books:
                 result = {
@@ -81,7 +81,7 @@ class RetrieveReceiptBooksService(Handler):
             }
         except ValidationError as error:
             result = {
-                "valie": "false",
+                "valid": "false",
                 "error": str(error)
             }
         

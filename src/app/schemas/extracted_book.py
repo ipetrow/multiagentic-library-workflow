@@ -1,8 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.app.domain.book.models import Book, ReadingStatus
 
 class ExtractedBook(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     isbn: int | None = None
     title: str
     author: str
@@ -18,4 +20,6 @@ class ExtractedBook(BaseModel):
         )
 
 class ExtractedBooks(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    
     books: list[ExtractedBook]
