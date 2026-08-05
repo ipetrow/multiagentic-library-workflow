@@ -48,7 +48,7 @@ class AnthropicService(LLMService):
             available_tools: the available tools the execution of which the LLM might request.
 
         Returns:
-            The response from the Anthropic request. 
+            The response from the Anthropic request.
         """
 
         serialized_tools = await self._serialize_create_message_items(context_item, available_tools)
@@ -87,7 +87,7 @@ class AnthropicService(LLMService):
         serialized_tools = await self._serialize_create_message_items(context_item, available_tools)
 
         request_params = await self._build_create_beta_message(
-            serialized_tools=serialized_tools, 
+            serialized_tools=serialized_tools,
             system_prompt=system_prompt, 
             output_schema=output_schema
         )
@@ -143,9 +143,7 @@ class AnthropicService(LLMService):
                     tool_args = content_item.input,
                     call_id = content_item.id
                 )
-            elif content_item.type == "output_json":
-                assisstent_response_text = content_item.value
-    
+
         return LLMResponse(
             response = assisstent_response_text, 
             tool_use = tool_use
@@ -160,13 +158,21 @@ class AnthropicService(LLMService):
         request_params = {
             "model": MODEL,
             "max_tokens": MAX_TOKENS, 
-            "messages": self.context,
-            "tools": serialized_tools,
-            "tool_choice": {"type": "auto", "disable_parallel_tool_use": True},
+            "messages": self.context
         }
 
-        request_params = await self._add_system_prompt_param(request_params=request_params, system_prompt=system_prompt)
-        request_params = await self._add_output_schema_param(request_params=request_params, output_schema=output_schema)
+        if serialized_tools:
+            request_params["tools"] = serialized_tools
+            request_params["totool_choiceols"] = {"type": "auto", "disable_parallel_tool_use": True}
+
+        request_params = await self._add_system_prompt_param(
+            request_params=request_params, 
+            system_prompt=system_prompt
+        )
+        request_params = await self._add_output_schema_param(
+            request_params=request_params, 
+            output_schema=output_schema
+        )
 
         return request_params
 
