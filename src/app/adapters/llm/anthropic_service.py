@@ -3,6 +3,7 @@ import os
 from anthropic import AnthropicFoundry
 from pydantic import BaseModel
 
+from src.app.skills.models import Skill
 from src.app.tools.definitions.tool_definition import ToolDefinition
 
 from .base_service import LLMService
@@ -51,7 +52,9 @@ class AnthropicService(LLMService):
             The response from the Anthropic request.
         """
 
-        serialized_tools = await self._serialize_create_message_items(context_item, available_tools)
+        serialized_context_item = await self._serialize_context_item(context_item)
+        self.context.append(serialized_context_item)
+        serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
 
         request_params = await self._build_create_message(
             serialized_tools=serialized_tools, 
@@ -69,6 +72,7 @@ class AnthropicService(LLMService):
     async def process_beta(
             self, 
             system_prompt: str,
+            skills: list[Skill] | None = None,
             context_item: ContextItem | None = None, 
             available_tools: list[ToolDefinition] | None = None,
             output_schema: type[BaseModel] | None = None
@@ -84,12 +88,16 @@ class AnthropicService(LLMService):
             The response from the Anthropic request. 
         """
 
-        serialized_tools = await self._serialize_create_message_items(context_item, available_tools)
+        serialized_context_item = await self._serialize_context_item(context_item)
+        self.context.append(serialized_context_item)
+        serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
+        serialized_skills = await self.adapter.serialize_skills(skills) if skills else []
 
         request_params = await self._build_create_beta_message(
             serialized_tools=serialized_tools,
             system_prompt=system_prompt, 
-            output_schema=output_schema
+            output_schema=output_schema,
+            serialized_skills=serialized_skills
         )
 
         try:
@@ -99,26 +107,15 @@ class AnthropicService(LLMService):
 
         return await self._process_response(response)
         
-    async def _serialize_create_message_items(
+    async def _serialize_context_item(
             self, 
-            context_item: ContextItem | None = None, 
-            available_tools: list[ToolDefinition] | None = None
-        ) -> list[dict]:
-
-        # serialize context
-        item: ContextItem = None
+            context_item: ContextItem | None = None
+        ) -> dict:
 
         if isinstance(context_item, ContextRoleItem):
-            item = await self.adapter.serialize_context_role_item(context_item)
+            return await self.adapter.serialize_context_role_item(context_item)
         elif isinstance(context_item, ContextToolOutputItem):
-            item = await self.adapter.serialize_context_tool_output_item(context_item)
-
-        self.context.append(item)
-
-        # serialize tools
-        serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
-
-        return serialized_tools
+            return await self.adapter.serialize_context_tool_output_item(context_item)
 
     async def _process_response(self, response) -> LLMResponse:
         self.context.append(
@@ -179,21 +176,16 @@ class AnthropicService(LLMService):
     async def _build_create_beta_message(
             self,
             serialized_tools: list[dict],
+            serialized_skills: list[dict],
             system_prompt: str | None = None,
-            output_schema: type[BaseModel] | None = None
+            output_schema: type[BaseModel] | None = None,
     ) -> dict:
         request_params = {
             "model": MODEL,
             "max_tokens": MAX_TOKENS,
             "betas": ["code-execution-2025-08-25", "skills-2025-10-02"],
             "container": {
-                "skills": [
-                    {
-                        "type": "custom", 
-                        "skill_id": "skill_id", # TODO add the correct id
-                        "version": "latest"
-                    }
-                ]
+                "skills": serialized_skills
             },  
             "messages": self.context,
             "tools": serialized_tools + [{"type": "code_execution_20250825", "name": "code_execution"}],

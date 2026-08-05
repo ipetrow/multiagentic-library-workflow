@@ -8,13 +8,13 @@ class SkillRegistry:
     def __init__(self, skill_config_path: Path):
 
         with skill_config_path.open() as f:
-            skills_dict = json.load(f)["skills"]
+            available_skills: list[dict] = json.load(f)["skills"]
             self._skills: dict[str, Skill] = {
-                skill["name"]: skill
-                for skill in skills_dict
+                skill_dict["name"]: Skill(**skill_dict)
+                for skill_dict in available_skills
             }
                 
-    def get_skill_id(self, name: str) -> Skill:
+    def get_skill(self, name: str) -> Skill:
         try: 
             return self._skills[name]
         except KeyError:

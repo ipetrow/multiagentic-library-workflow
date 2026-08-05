@@ -1,3 +1,4 @@
+from src.app.skills.models import Skill
 from src.app.tools.definitions.tool_definition import ToolDefinition
 
 from .models.models import (
@@ -108,3 +109,16 @@ class AnthropicContextMapper:
         ]
 
         return serialized_tools
+
+    async def serialize_skills(self, skills: list[Skill]) -> list[dict]:
+
+        serialized_skills = [
+            {
+                "type": "custom", 
+                "skill_id": skill.id,
+                "version": "latest"
+            }
+            for skill in skills
+        ]
+
+        return serialized_skills
