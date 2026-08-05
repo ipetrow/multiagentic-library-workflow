@@ -26,7 +26,8 @@ async def main():
             libAgent = LibraryAgent(
                 tool_registry = tools_regsitry,
                 skill_registry = skills_registry,
-                llm = AnthropicService()
+                llm = AnthropicService(),
+                skills=[skills_registry.get_skill(name="insert-books")]
             )
 
             try:

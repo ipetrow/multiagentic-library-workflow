@@ -14,15 +14,14 @@ from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.prompts.utils.prompts import load_prompt
 from src.app.schemas.extracted_book import ExtractedBooks
 from src.app.skills.skill_registry import SkillRegistry
+from src.app.skills.models import Skill
 from src.app.tools.definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
 from src.app.tools.tool_registry import ToolRegistry
 from src.app.tools.tool_registry import ToolRegistry
 
 from .exceptions import MaxStepsExceededError
-from .models.models import (
-    BooksValidationResult, 
-    BookValidationResult
-)
+from .models.models import BooksValidationResult
+
 from .utils.utils import (
     prepare_books_insertion,
     validate_extracted_books
@@ -34,10 +33,17 @@ MAX_STEPS = 10
 
 class LibraryAgent:
 
-    def __init__(self, tool_registry: ToolRegistry, skill_registry: SkillRegistry, llm: LLMService):
+    def __init__(
+            self, 
+            tool_registry: ToolRegistry, 
+            skill_registry: SkillRegistry, 
+            llm: LLMService,
+            skills: list[Skill]
+    ):
         self._tool_registry = tool_registry
         self._skill_registry = skill_registry
         self._llm = llm
+        self._skills = skills
         
 
     async def run(self, prompt: str):
@@ -56,8 +62,9 @@ class LibraryAgent:
         for _ in range(MAX_STEPS):
 
             llm_response: LLMResponse = await self._llm.process_beta(
-                system_prompt = SYSTEM_PROMPT,
                 context_item = context_item, 
+                skills = self._skills,
+                system_prompt = SYSTEM_PROMPT,
                 available_tools = self._tool_registry.list_definitions()
             )
 
