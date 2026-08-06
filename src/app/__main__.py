@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from src.app.agents.library_agent import LibraryAgent
 from src.app.adapters.mcp.manager import MCPManager
+from src.app.chat_session import ChatSession
 from src.app.tools.tool_registry_initializer import register_tools
 from src.app.tools.tool_registry import ToolRegistry
 from src.app.adapters.llm.anthropic_service import AnthropicService
@@ -30,8 +31,8 @@ async def main():
                 skills=[skills_registry.get_skill(name="insert-books")]
             )
 
-            try:
-                libAgent.run()
+            try:   
+                await ChatSession(libAgent).run()
             except MaxStepsExceededError as e:
                 # TODO asks the User for clarification
                 print(e)
