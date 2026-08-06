@@ -20,7 +20,6 @@ Required Book Fields
 - title
 - author
 - page number
-- reading status
 
 Optional Book Fields
 - ISBN
