@@ -1,5 +1,5 @@
 from src.app.schemas.extracted_book import ExtractedBook
-from src.app.domain.book.models import Book, ReadingStatus
+from src.app.domain.book.models import Book
 
 from ..models.models import (
     BookValidationResult,
@@ -8,7 +8,7 @@ from ..models.models import (
 
 def prepare_books_insertion(validated_extracted_books: list[ExtractedBook]) -> list[Book]:
     return [
-        validated_book.to_book(reading_status=ReadingStatus.NOT_STARTED) 
+        validated_book.to_book() 
         for validated_book in validated_extracted_books
     ]
 

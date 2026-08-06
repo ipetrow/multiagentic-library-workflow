@@ -133,7 +133,7 @@ class AnthropicService(LLMService):
             
             # handle text/message if present
             if content_item.type == "text":
-                content_item_texts.append[content_item.text]
+                content_item_texts.append(content_item.text)
             elif content_item.type == "tool_use" and response.stop_reason == "tool_use": # handle a tool call request if present
                 tool_use = ToolUse(
                     tool_name = content_item.name, 
@@ -141,7 +141,7 @@ class AnthropicService(LLMService):
                     call_id = content_item.id
                 )
 
-            assisstent_response_text = "\n".join(content_item_texts)
+        assisstent_response_text = "\n".join(content_item_texts)
 
         return LLMResponse(
             response = assisstent_response_text, 
