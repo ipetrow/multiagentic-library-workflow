@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-from src.app.domain.book.models import Book, ReadingStatus
+from src.app.domain.book.models import Book
 
 class ExtractedBook(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -10,12 +10,11 @@ class ExtractedBook(BaseModel):
     author: str
     pages_num: int | None = None
 
-    def to_book(self, reading_status: ReadingStatus) -> Book:
+    def to_book(self) -> Book:
         return Book(
             title=self.title,
             author=self.author,
             pages_num=self.pages_num,
-            reading_status=reading_status,
             isbn=self.isbn
         )
 

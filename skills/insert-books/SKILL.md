@@ -10,17 +10,16 @@ description: Handles the addition of books into the library database. Use when u
 - Only after confirmation proceed with the execution.
 
 ## Step 2: Data Validation
-- Despite the data validation should have already happend, ensure it is consistent, complete and there are no entry duplications.
+- Ensure the data is consistent, complete and there are no entry duplications.
 - The book's author should be only one. 
 - In case of validation errors, ask the user for clarification. Explain which book is affected, what is missing or ambiguous, suggest resolution.
-- If there is an optional missing data, confirm with the user whether to continue. 
+- If optional data is missing, proceed with tool invocation without asking for configrmation.
 - Do NOT invent missing book information.
 
 Required Book Fields
 - title
 - author
 - page number
-- reading status
 
 Optional Book Fields
 - ISBN
