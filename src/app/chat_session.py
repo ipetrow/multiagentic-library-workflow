@@ -8,7 +8,7 @@ class ChatSession:
     async def run(self):
         """Run an interactive chat session"""
 
-        print("Type your queries or 'quit' to exit.")
+        print("\n\nType your queries or 'quit' to exit.")
         
         while True:
             try:
@@ -17,7 +17,7 @@ class ChatSession:
                 if query.lower() == "quit":
                     break
 
-                response = await self._agent(query)
+                response = await self._agent.run(query)
                 print("\n" + response)
             except Exception as e:
                 print(f"\nError: {str(e)}")

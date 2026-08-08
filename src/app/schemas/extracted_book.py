@@ -5,7 +5,7 @@ from src.app.domain.book.models import Book
 class ExtractedBook(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
-    isbn: int | None = None
+    isbn: str | None = None
     title: str
     author: str
     pages_num: int | None = None
