@@ -44,10 +44,9 @@ class LibraryAgent:
         self._skill_registry = skill_registry
         self._llm = llm
         self._skills = skills
-        
 
     async def run(self, prompt: str):
-        
+            
         responses: list[LLMResponse] = []
 
         context_item = ContextRoleItem(
@@ -60,7 +59,6 @@ class LibraryAgent:
         )
 
         for _ in range(MAX_STEPS):
-
             llm_response: LLMResponse = await self._llm.process_beta(
                 context_item = context_item, 
                 skills = self._skills,
@@ -72,29 +70,31 @@ class LibraryAgent:
             if llm_response.is_final: # no function calls - agentic loop termination
                 responses.append(llm_response.response)
                 break
-            
+
             tool_name = tool_call.tool_name
             tool_args = tool_call.tool_args
 
             if tool_name == "insert_books":
-                extracted_books: ExtractedBooks = ExtractedBooks.model_validate_json(llm_response.response)
+                extracted_books: ExtractedBooks = ExtractedBooks.model_validate(tool_args)
                         
                 validation_results: BooksValidationResult = validate_extracted_books(extracted_books.books)
+
                 if not validation_results.valid:
-                    validation_results_dict = [result.to_dict() for result in validation_results.results]
+                    validation_results_dict = [result.model_dump() for result in validation_results.results]
                     context_item = ContextToolOutputItem(
                                     tool_call_id = tool_call.call_id,
                                     tool_output = json.dumps(validation_results_dict)
                                 )
                     continue
 
-                extracted_validated_books = [result.normalized_book for result in validation_results.results]
+                extracted_validated_books = [result.book for result in validation_results.results]
                 books_for_insertion = prepare_books_insertion(extracted_validated_books)
 
                 books_for_insertion_dict = {
                     "books": [book.to_dict() for book in books_for_insertion]
                 }
-                tool_args = json.dumps(books_for_insertion_dict)
+
+                tool_args = books_for_insertion_dict
 
             tool_result: ToolCallResponse = await self._tool_registry.execute(
                 tool_name=tool_name, 

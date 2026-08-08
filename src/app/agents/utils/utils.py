@@ -15,7 +15,6 @@ def prepare_books_insertion(validated_extracted_books: list[ExtractedBook]) -> l
 def validate_extracted_books(extracted_books: list[ExtractedBook]) -> BooksValidationResult:
 
     validated_books: list[BookValidationResult] = []
-    are_all_books_valid = True
 
     for book in extracted_books:
         errors: list[str] = []
@@ -39,23 +38,25 @@ def validate_extracted_books(extracted_books: list[ExtractedBook]) -> BooksValid
             errors.append("Missing pages number")
 
         if isbn:
-            book.isbn = _normalize_isbn(isbn)
+            normalized_isbn = _normalize_isbn(isbn)
 
-        is_book_valid = "true" if not errors else "false"
+            if normalized_isbn.isdigit():
+                book.isbn = normalized_isbn
+            else:
+                errors.append("Invalid ISBN containing not only digits")
+
+        is_book_valid = True if not errors else False
 
         validated_books.append(
             BookValidationResult(
                 valid = is_book_valid,
-                normalized_book = book,
+                book = book,
                 errors = errors
             )
         )
 
-        if are_all_books_valid:
-            are_all_books_valid = is_book_valid
-
     return BooksValidationResult(
-        valid = are_all_books_valid,
+        valid = all(validated_book.valid for validated_book in validated_books),
         results = validated_books
     )
 

@@ -34,7 +34,6 @@ async def main():
             try:   
                 await ChatSession(libAgent).run()
             except MaxStepsExceededError as e:
-                # TODO asks the User for clarification
                 print(e)
 
         except Exception as e:
