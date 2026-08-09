@@ -65,10 +65,10 @@ class LibraryAgent:
                 system_prompt = SYSTEM_PROMPT,
                 available_tools = self._tool_registry.list_definitions()
             )
+            responses.append(llm_response.response)
 
             tool_call = llm_response.tool_use
             if llm_response.is_final: # no function calls - agentic loop termination
-                responses.append(llm_response.response)
                 break
 
             tool_name = tool_call.tool_name
@@ -108,4 +108,4 @@ class LibraryAgent:
         else:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
         
-        return "\n".join(responses)
+        return "\n\n".join(responses)

@@ -31,7 +31,8 @@ class Database:
                     "isbn": row[1],
                     "title": row[2],
                     "author": row[3],
-                    "pages_num": row[4]
+                    "pages_num": row[4],
+                    "reading_status": row[5]
                 }
                 for row in cur.execute(query)
             ]

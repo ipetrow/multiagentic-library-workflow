@@ -20,7 +20,7 @@ class HostTool(Tool):
         self._handler = handler
     
     async def execute(self, arguments: dict) -> ToolCallResponse:
-        tool_result = await self._handler(arguments)
+        tool_result = await self._handler.execute(arguments)
 
         return tool_result
 
