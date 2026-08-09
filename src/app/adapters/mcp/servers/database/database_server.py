@@ -40,7 +40,18 @@ def insert_books(books: list[Book]) -> str:
     }
 
     for book in books:
-        if db.is_duplicate(title=book.title, author=book.author):
+        if not db.is_duplicate(title=book.title, author=book.author):
+            db.insert_book(book=book)
+
+            inserted_books["books_insertion_status"].append({
+                "success": True,
+                "book": {
+                    "title": book.title,
+                    "author": book.author
+                },
+                "message": "Book added successfully"
+            })
+        else:
             inserted_books["books_insertion_status"].append({
                 "success": False,
                 "book": {
@@ -49,18 +60,7 @@ def insert_books(books: list[Book]) -> str:
                 },
                 "error": "BookDuplicationError",
                 "message": "Book with same title and author already exists"
-            })
-
-        db.insert_book(book=book)
-        
-        inserted_books["books_insertion_status"].append({
-            "success": True,
-            "book": {
-                "title": book.title,
-                "author": book.author
-            },
-            "message": "Book added successfully"
-        })
+            })        
 
     return json.dumps(inserted_books)
 
