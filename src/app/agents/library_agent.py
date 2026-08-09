@@ -109,7 +109,3 @@ class LibraryAgent:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
         
         return "\n".join(responses)
-
-    async def handle_insert_books_request(self):
-
-        pass
