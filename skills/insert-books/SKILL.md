@@ -33,9 +33,3 @@ After the insertion operation completes, use available tools to ensure the data 
 ## Step 5: Report Result
 - Communicate concisely whether the task has been successful or not by listing the successful and unsuccessful book additions.
 - Do not state unconfirmed operations as successful.
-
-
-
-
-
-
