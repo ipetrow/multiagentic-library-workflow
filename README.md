@@ -1,17 +1,27 @@
-# Project Structure
-TODO __main__.py
+# Project Overview
+TODO
 
-The appication codebase is situated in `src/app` and consists of the following directories.
-- `adapters/`: 
-    - `llm/`: 
-    - `mcp/`: 
-- `agents`: 
-- `services`:
-- `skills`:
-- `prompts`:
-- `schemas`:
-- `tools`:
-- `domain`:
+# Use Cases
+TODO 
+
+# Implementation Scope
+TODO
+
+## Out of Scope
+- Extracting data from multiple files: The workflow handles a single pdf document. 
+
+# Project Structure
+The appication entry point `__main__.py` and codebase is situated in `src/app`. It consists of the following subdirectories.
+- `adapters/`: External interfaces for the application.
+    - `llm/`: The LLM related logic - API calls, requests data mapping.
+    - `mcp/`: The MCP Client-Server logic - client-server session creation and management, handling server primitives access.
+- `agents/`: All the available agents - main library management agent and the specialized subagents.
+- `services/`: Capabilities exposed to the LLM through a manualy defined host tools.
+- `skills/`: Logic for managing all the available skills.
+- `prompts/`: Contains the agents' system prompts and regular prompts for strinctly defined single LLM requests. 
+- `schemas/`: Schemas describing host tools exposed to the LLM.
+- `tools/`: Logic for managing all the available skills - mcp and custom host tools.
+- `domain/`: Contains the main data structures for the application domain concepts.
 
 Additionaly, there are several helper directories:
 - `scripts/skills/`: Standalone scripts for managing the Agentic Skills.
@@ -32,6 +42,8 @@ TODO
 ### Skills
 
 ### Tools
+
+### Services
 
 ## API
 For the API layer, a MCP Client-Server standard is being used. The MCP Servers are created using `FastMCP` with `stdio` as transport layer. 
