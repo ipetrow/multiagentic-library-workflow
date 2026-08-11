@@ -1,29 +1,48 @@
 # Project Overview
-TODO
+This project evolves a previous [AI agentic two-step workflow](https://github.com/ipetrow/agentic-bookslog-workflow.git) into an autonomous, multi-agent library management application. It is built around **MCP**, **Anthropic Claude Messages API**, **Agentic Skills**, **SQLite** and **Python**. The LLM capabilities are being utilized through an interactive chat session and further extended by Skills, tools and resources.
 
-# Use Cases
-TODO 
+# Use Case
+The application helps users to manage a digital representation of their personal library and analyze their collection for providing reading habits insights. 
+
+The following scenarious are supported: 
+- Retrieve books data from a PDF receipt and input the data to the library.
+- Direct prompt queries for book insertion to the library.
+- Manage book reading statuses.
+- **[DEVELOPMENT IN PROGRESS]** Analyze books data and present it in the form of charts.
+
+## Example Interactions
+Through a chat session the users can interact with the application using a natural language.
+- "Import the following book -  ..."
+- "Import the books from the receipt"
+- "Update the reading status of the book with title ... to completed"
+- **[DEVELOPMENT IN PROGRESS]** "How many books, month by month, have I read so far this year?"
 
 # Implementation Scope
-TODO
+The goals of the implementation were to explore the following concepts:
+- Designing a multi-agent autonomous system.
+- Extending agents' capabilities with Agentic Skills.
+- Exploring the human-in-the-loop design concept for ensuring data integrity.
+- Using the planning agentic design pattern to break down tasks into executable steps and avoid unintended outcomes.
+
+All topics were considered with clean architectural principles in mind. Isolating the LLM layer provides flexibility in choosing a different LLM provider based on the agents' specialization. 
 
 ## Out of Scope
-- Extracting data from multiple files: The workflow handles a single pdf document. 
+- Extracting data from multiple files: The workflow handles a single pdf document.
 
 # Project Structure
-The appication entry point `__main__.py` and codebase is situated in `src/app`. It consists of the following subdirectories.
+The application entry point `__main__.py` and codebase is situated in `src/app/`. It consists of the following directories.
 - `adapters/`: External interfaces for the application.
     - `llm/`: The LLM related logic - API calls, requests data mapping.
     - `mcp/`: The MCP Client-Server logic - client-server session creation and management, handling server primitives access.
 - `agents/`: All the available agents - main library management agent and the specialized subagents.
-- `services/`: Capabilities exposed to the LLM through a manualy defined host tools.
+- `services/`: Capabilities exposed to the LLM through a manually defined host tools.
 - `skills/`: Logic for managing all the available skills.
-- `prompts/`: Contains the agents' system prompts and regular prompts for strinctly defined single LLM requests. 
+- `prompts/`: Contains the agents' system prompts and regular prompts for strictly defined single LLM requests. 
 - `schemas/`: Schemas describing host tools exposed to the LLM.
-- `tools/`: Logic for managing all the available skills - mcp and custom host tools.
-- `domain/`: Contains the main data structures for the application domain concepts.
+- `tools/`: Logic for managing all the mcp and custom host tools.
+- `domain/`: Contains the main data structures for the application domain.
 
-Additionaly, there are several helper directories:
+Additionally, there are several helper directories:
 - `scripts/skills/`: Standalone scripts for managing the Agentic Skills.
 - `skills/`: The Skills used by the LLM.
 - `config/`: Currently contains a single `skills.json` file describing all the skills used by the LLM.
@@ -35,20 +54,42 @@ Additionaly, there are several helper directories:
 - An Anthropic API key included in the environment variables.
 
 # Implementation Details
-## Agents
+## AI Agents
+The system includes the following AI agents:
+1. *Library Management* AI Agent
+    - Responsible for interacting with the user.
+    - Coordinates the delegation of tasks to specialized subagents.
+    - Plans tasks execution steps.
+    - Performs unspecialized tasks, requesting tool executions when necessary.
+    - Answers general questions.
+2. **[DEVELOPMENT IN PROGRESS]** *Analysis* AI Subagent
+    - Analyzes the available books database data based on the user's query.
+    - Provides an analysis summary in the form of charts.
 
-TODO
+## Agentic Skills
+The Skills are managed by a `SkillRegistry` which loads all available skills described in the `config/skills.json` file. For more details regarding the file creation, check the `Uploading Skills` section below.
 
-### Skills
+The system includes the following Agentic Skills:
+- `insert-books`: A Skill with precise step-by-step instructions for inserting books to the library database.
 
-### Tools
+## Tools
+The application recognizes two types of tools:
+1. MCP tools: These tools are provided by the MCP layer. Their schemas are automatically generated. For detailed tools information check the `MCP Servers` section below.
+2. Host tools: These are standalone tools, not part of the MCP Servers. The schemas are manually defined in `src/app/schemas/`. Their purpose is to increase the AI agents' capabilities in making autonomous decisions.
+    - `retrieve_receipt_books`: A host tool that can be requested from the *Library Management* AI Agent for retrieving books data from a receipt. It is an encapsulation of the `RetrieveReceiptBooksService` service which processes an MCP resource primitive. In this way, the AI Agent can autonomously decide, based on the user's request, when such action is needed.
 
-### Services
+All the tools are managed by a `ToolRegistry` situated in `src/app/tools/`.
+
+## Services
+The system includes the following services:
+- `RetrieveReceiptBooksService`: The service consists of two steps. It first gets the MCP receipt resource. Afterwards, it makes a single LLM request for retrieving all the books in the provided file.
+
+**Note** The retrieved data is being returned to the *Library Management* AI Agent for further processing.
 
 ## API
 For the API layer, a MCP Client-Server standard is being used. The MCP Servers are created using `FastMCP` with `stdio` as transport layer. 
 
-### Servers
+### MCP Servers
 There are two MCP Servers, each one with its own responsibility:
 1. Database server: A MCP Server exposing tools for interacting with the `bookslog` database. 
 - Server file path `src/app/adapters/mcp/servers/database/database_server.py`.
@@ -66,12 +107,20 @@ The application uses the Anthropic Claude Messages API with the `claude-sonnet-4
 
 There are two main files containing the logic related with the Anthropic Claude Messages API:
 - `app/llm/anthropic_service.py`: Makes a request to the Anthropic Claude Messages API using the Anthropic Python SDK.
-- `app/llm/anthropic_mapper.py`: Contains a mapper class which handles many of the LLM API specifics. It is an additional layer which aims to simlify the process of migration to another LLM provider if needed.
+- `app/llm/anthropic_mapper.py`: Contains a mapper class which handles many of the LLM API specifics. It is an additional layer which aims to simplify the process of migration to another LLM provider if needed.
 
 ## Database
-It is a simplistic SQLite database named ***bookslog***, consisting of only one  ***books*** table. The main idea is to store books information - ***isbn***, ***title***, ***author***, ***number of pages*** and ***reading status***. For convenience and simplicity of the demo, a book can have only one author stored as a string.
+It is a simplistic SQLite database named `bookslog`, consisting of only one  `books` table. The main idea is to store books information - ***isbn***, ***title***, ***author***, ***number of pages*** and ***reading status***. For convenience and simplicity of the demo, a book can have only one author stored as a string.
 
 The database path for the production application is set in the `.env` file and loaded right at the beginning of the application start.
+
+## Data Integrity
+A main functionality of the application is retrieving books data from a direct user query or a provided receipt. This process is error prone. To ensure the data integrity, before the database insertion operation, multiple layers of validations are being implemented:
+- The `insert-books` agentic Skill ensures the retrieved data is consistent and does not contain duplicating entries (e.g. receipt issue).
+- A deterministic Python data normalization and extended validation is performed as well. The LLMs make mistakes. Leaving the validation to them only is unreliable.
+- Book duplication check in the database layer.
+
+All found data integrity issues are clarified with the user through the active chat session.
 
 # Running the Project
 ## Setup
@@ -82,17 +131,17 @@ The database path for the production application is set in the `.env` file and l
 5. Double check the LLM API key is added in the environment variables. The variable is retrieved in `src/app/adapters/llm/anthropic_service.py.py` and is with the name `ANTHROPIC_API_KEY`.
 
 ## Execution
-Start the MCP Client and connect to the MCP Server by: `uv run python -m src.app`.
+The application can be started with the command `uv run python -m src.app`.
 
 # Uploading Skills
-The project provides the option to manage the Skills used by the LLM. Dedicated scripts for uploading, deleting and listing all available skills can be found in `scripts/skills/`.
+The project provides an option to manage the Skills used by the LLM. Dedicated scripts for uploading, deleting and listing all available skills can be found in `scripts/skills/`.
 
 ## Setup
 1. Similarly to the project setup, the LLM API key and the Azure endpoint should be provided in `scripts/skills/skills_service.py`.
 2. Ensure the Skill for upload is in `skills/` directory and it follows the Anthropic Agentic Skills guidelines for file structure. 
 
 ## Execution
-For uploading all the Skills in `skills/` execute `uv run python -m scripts.skills.upload_skills.py`.
+For uploading all the Skills in `skills/` execute `uv run python -m scripts.skills.upload_skills.py`. This operation will update the `config/skills.json` file with the proper Skill names and IDs.
 
 # References
-The project is an evolution and enhancement of an earlier repository where I developed a multi-step agentic AI workflow for inserting bookds from a receipt in a personal library database [Agentic Bookslog](git@github.com:ipetrow/agentic_bookslog.git).
+The project is an evolution and enhancement of an earlier repository where I developed a multi-step agentic AI workflow for inserting books from a receipt in a personal library database [Agentic Bookslog Workflow](https://github.com/ipetrow/agentic-bookslog-workflow.git).
