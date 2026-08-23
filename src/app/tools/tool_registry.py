@@ -21,11 +21,14 @@ class ToolRegistry:
     def list_definitions(self) -> list[ToolDefinition]:
         return [tool.definition for tool in self._tools.values()]
     
-    def get_tool(self, name: str) -> Tool:
-        return self._tools[name]
+    async def get_tool(self, name: str) -> Tool:
+        try:
+            return self._tools[name]
+        except KeyError:
+            raise ValueError(f"Unknown tool: '{name}'")
     
     async def execute(self, tool_name, tool_args: dict | None = None) -> ToolCallResponse:
-        tool = self._tools[tool_name]
+        tool = await self.get_tool(tool_name)
 
         logging.info("Executing %s", tool.definition.name)
 
