@@ -18,7 +18,7 @@ ANALYSIS_MCP_TOOLS = frozenset({
     "get_reading_statistics"
 })
 
-LIBRARY_MANAGEMENT_TOOLS = frozenset({
+LIBRARY_MANAGEMENT_MCP_TOOLS = frozenset({
     "get_all_books",
     "insert_books",
     "update_book_reading_status"
@@ -46,7 +46,7 @@ async def create_library_agent_tool_registry(
 
     available_tools: list[MCPToolEntry] = await mcp_manager.get_tools()
 
-    agent_mcp_tools = await _filter_tools(available_tools=available_tools, allowed_tools=LIBRARY_MANAGEMENT_TOOLS)
+    agent_mcp_tools = await _filter_tools(available_tools=available_tools, allowed_tools=LIBRARY_MANAGEMENT_MCP_TOOLS)
     
     await _register_mcp_tools(tool_registry, mcp_manager, tools=agent_mcp_tools)
     await _register_host_tools(tool_registry, mcp_manager, llm)

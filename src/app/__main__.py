@@ -51,7 +51,7 @@ async def create_library_agent(
 
     skills_registry = SkillRegistry(Path("config/skills.json"))
 
-    libAgent = LibraryAgent(
+    return LibraryAgent(
         tool_registry = tool_registry,
         skill_registry = skills_registry,
         llm = AnthropicService(),
@@ -68,7 +68,7 @@ async def create_analysis_agent(
 
     # TODO: 1 - provide correct skill
     
-    analysis_agent = AnalysisAgent(
+    return AnalysisAgent(
         tool_registry = tool_registry,
         skill_registry = skills_registry,
         llm = AnthropicService(),
