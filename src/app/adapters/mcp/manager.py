@@ -5,7 +5,10 @@ import os
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from .models.models import ToolCallResponse
+from .models.models import (
+    MCPToolEntry,
+    ToolCallResponse
+)
 
 class MCPManager:
 
@@ -78,10 +81,10 @@ class MCPManager:
 
             for tool in tools_response.tools:
                 available_tools.append(
-                    {
-                        "session_name": session_name,
-                        "tool": tool
-                    }
+                    MCPToolEntry(
+                        session_name=session_name,
+                        tool=tool
+                    )
                 )
 
         return available_tools

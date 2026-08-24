@@ -17,7 +17,6 @@ from src.app.skills.skill_registry import SkillRegistry
 from src.app.skills.models import Skill
 from src.app.tools.definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
 from src.app.tools.tool_registry import ToolRegistry
-from src.app.tools.tool_registry import ToolRegistry
 
 from .exceptions import MaxStepsExceededError
 from .models.models import BooksValidationResult
@@ -45,7 +44,7 @@ class LibraryAgent:
         self._llm = llm
         self._skills = skills
 
-    async def run(self, prompt: str):
+    async def run(self, prompt: str) -> str:
             
         responses: list[LLMResponse] = []
 

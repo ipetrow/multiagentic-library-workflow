@@ -1,4 +1,7 @@
 from src.app.adapters.mcp.manager import MCPManager
+from src.app.adapters.mcp.models.models import MCPToolEntry
+from src.app.agents.analysis_agent import AnalysisAgent
+from src.app.services.delegate_analysis_service import DelegateAnalysisService
 from src.app.services.retrieve_receipt_books import RetrieveReceiptBooksService
 from src.app.adapters.llm.anthropic_service import LLMService
 
@@ -6,24 +9,64 @@ from .definitions.tool_definition import ToolDefinition
 from .tool_host import HostTool
 from .tool_mcp import MCPTool
 from .tool_registry import ToolRegistry
-from .definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
+from .definitions.tool_definitions import (
+    RETRIEVE_RECEIPT_BOOKS_TOOL,
+    DELEGATE_ANALYSIS_TOOL
+)
 
-async def register_tools(
-        registry: ToolRegistry,
+ANALYSIS_MCP_TOOLS = frozenset({
+    "get_reading_statistics"
+})
+
+LIBRARY_MANAGEMENT_MCP_TOOLS = frozenset({
+    "get_all_books",
+    "insert_books",
+    "update_book_reading_status"
+})
+
+async def create_analysis_agent_tool_registry(
         mcp_manager: MCPManager,
-        llm: LLMService
 ) -> ToolRegistry:
-    await _register_mcp_tools(registry, mcp_manager)
-    _register_host_tools(registry, mcp_manager, llm)
+    tool_registry = ToolRegistry()
 
-    return registry
+    available_tools: list[MCPToolEntry] = await mcp_manager.get_tools()
 
-async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
+    agent_mcp_tools = await _filter_tools(available_tools=available_tools, allowed_tools=ANALYSIS_MCP_TOOLS)
 
-    available_tools: list[dict] = await mcp_manager.get_tools()
+    await _register_mcp_tools(tool_registry, mcp_manager, tools=agent_mcp_tools)
 
-    for item in available_tools:
-        tool = item["tool"]
+    return tool_registry
+
+async def create_library_agent_tool_registry(
+        mcp_manager: MCPManager,
+        llm: LLMService,
+        analysis_agent: AnalysisAgent
+) -> ToolRegistry:
+    tool_registry = ToolRegistry()
+
+    available_tools: list[MCPToolEntry] = await mcp_manager.get_tools()
+
+    agent_mcp_tools = await _filter_tools(available_tools=available_tools, allowed_tools=LIBRARY_MANAGEMENT_MCP_TOOLS)
+    
+    await _register_mcp_tools(tool_registry, mcp_manager, tools=agent_mcp_tools)
+    await _register_host_tools(tool_registry, mcp_manager, llm)
+
+    tool_registry.register(
+        HostTool(
+            definition=DELEGATE_ANALYSIS_TOOL,
+            handler=DelegateAnalysisService(analysis_agent=analysis_agent)
+        )
+    )
+
+    return tool_registry
+
+async def _register_mcp_tools(
+        registry: ToolRegistry, 
+        mcp_manager: MCPManager, 
+        tools: list[MCPToolEntry]
+):
+    for item in tools:
+        tool = item.tool
 
         registry.register(
             MCPTool(
@@ -33,11 +76,15 @@ async def _register_mcp_tools(registry: ToolRegistry, mcp_manager: MCPManager):
                     input_schema = tool.inputSchema
                 ), 
                 mcp_manager = mcp_manager, 
-                session_name = item["session_name"]
+                session_name = item.session_name
             )
         )
     
-def _register_host_tools(registry: ToolRegistry, mcp_manager: MCPManager, llm: LLMService):
+async def _register_host_tools(
+        registry: ToolRegistry, 
+        mcp_manager: MCPManager, 
+        llm: LLMService
+):
     
     registry.register(
         HostTool(
@@ -45,3 +92,13 @@ def _register_host_tools(registry: ToolRegistry, mcp_manager: MCPManager, llm: L
             handler=RetrieveReceiptBooksService(mcp_manager=mcp_manager, llm=llm)
         )
     )
+
+async def _filter_tools(
+        available_tools: list[MCPToolEntry], 
+        allowed_tools: frozenset
+) -> list[MCPToolEntry]:
+    return [
+        tool_entry
+        for tool_entry in available_tools
+        if tool_entry.tool.name in allowed_tools
+    ]
