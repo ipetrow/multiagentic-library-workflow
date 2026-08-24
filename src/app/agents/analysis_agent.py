@@ -1,5 +1,4 @@
 from src.app.adapters.llm.base_service import LLMService
-)
 from src.app.skills.skill_registry import SkillRegistry
 from src.app.skills.models import Skill
 from src.app.tools.tool_registry import ToolRegistry

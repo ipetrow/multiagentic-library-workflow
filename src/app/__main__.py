@@ -25,9 +25,9 @@ async def main():
 
     async with MCPManager() as mcp:
         try:
-            analysis_agent = create_analysis_agent()
+            analysis_agent = await create_analysis_agent(mcp=mcp)
 
-            library_agent = create_library_agent(mcp=mcp, llm=llm, analysis_agent=analysis_agent)
+            library_agent = await create_library_agent(mcp=mcp, llm=llm, analysis_agent=analysis_agent)
 
             try:   
                 await ChatSession(library_agent).run()
@@ -43,29 +43,33 @@ async def create_library_agent(
         analysis_agent: AnalysisAgent
 ) -> LibraryAgent:
 
-    tools_regsitry = await create_library_agent_tool_registry(
+    tool_registry = await create_library_agent_tool_registry(
         mcp_manager = mcp, 
-        llm = llm
+        llm = llm,
+        analysis_agent=analysis_agent
     )
 
     skills_registry = SkillRegistry(Path("config/skills.json"))
 
     libAgent = LibraryAgent(
-        tool_registry = tools_regsitry,
+        tool_registry = tool_registry,
         skill_registry = skills_registry,
         llm = AnthropicService(),
         skills=[skills_registry.get_skill(name="insert-books")]
     )
 
-async def create_analysis_agent() -> AnalysisAgent:
-    tools_registry = create_analysis_agent_tool_registry()
+async def create_analysis_agent(
+        mcp: MCPManager
+) -> AnalysisAgent:
+    
+    tool_registry = await create_analysis_agent_tool_registry(mcp_manager=mcp)
 
     skills_registry = SkillRegistry(Path("config/skills.json"))
 
     # TODO: 1 - provide correct skill
     
     analysis_agent = AnalysisAgent(
-        tool_registry = tools_registry,
+        tool_registry = tool_registry,
         skill_registry = skills_registry,
         llm = AnthropicService(),
         skills=[skills_registry.get_skill(name="insert-books")]
