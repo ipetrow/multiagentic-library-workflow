@@ -8,14 +8,11 @@ from src.app.adapters.llm.models.models import (
 )
 from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.models.llm_response import LLMResponse
-from src.app.domain.book.models import Book
-from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.prompts.utils.prompts import load_prompt
 from src.app.schemas.extracted_book import ExtractedBooks
 from src.app.skills.skill_registry import SkillRegistry
 from src.app.skills.models import Skill
-from src.app.tools.definitions.tool_definitions import RETRIEVE_RECEIPT_BOOKS_TOOL
 from src.app.tools.tool_registry import ToolRegistry
 
 from .exceptions import MaxStepsExceededError
@@ -26,7 +23,12 @@ from .utils.utils import (
     validate_extracted_books
 )
 
-SYSTEM_PROMPT = load_prompt(Prompt(type=PromptType.AGENT, filename="library_agent_prompt.md"))
+SYSTEM_PROMPT = load_prompt(
+    Prompt(
+        type=PromptType.AGENT, 
+        filename="library_agent_prompt.md"
+    )
+)
 
 MAX_STEPS = 10
 
