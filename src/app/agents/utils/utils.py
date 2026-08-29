@@ -5,7 +5,8 @@ from src.app.domain.book.models import Book
 
 from ..models.models import (
     BookValidationResult,
-    BooksValidationResult
+    BooksValidationResult,
+    FinishedMonthValidationResult
 )
 
 def prepare_books_insertion(validated_extracted_books: list[ExtractedBook]) -> list[Book]:
@@ -49,10 +50,12 @@ def validate_extracted_books(extracted_books: list[ExtractedBook]) -> BooksValid
                 errors.append("Invalid ISBN containing not only digits")
 
         if finished_month:
-            try:
-                book.finished_month = normalize_finished_month(finished_month)
-            except ValueError as e:
-                errors.append(str(e))
+            finished_month_validation_result = normalize_finished_month(finished_month)
+
+            if finished_month_validation_result.valid:
+                book.finished_month = finished_month_validation_result.value
+            else:
+                errors.append(finished_month_validation_result.error)
 
         is_book_valid = True if not errors else False
 
@@ -79,7 +82,7 @@ def _normalize_isbn(isbn: str | None) -> str | None:
 
     return isbn.replace("-", "").replace(" ", "").upper()
 
-def normalize_finished_month(finished_month: str) -> str:
+def normalize_finished_month(finished_month: str) -> FinishedMonthValidationResult:
     """
     Convert the month the book has been finished to a date in the format 'YYYY-MM-DD'.
     The normalization is done for an easier integration with the database DATE type. 
@@ -91,10 +94,16 @@ def normalize_finished_month(finished_month: str) -> str:
         finished_month: The month in which the book has been finished. Format: 'YYYY-MM'.
     
     Returns:
-            The normalized date the book has been finished.
+        The normalized date the book has been finished.
     """
 
     if not re.fullmatch(r"\d{4}-\d{2}", finished_month):
-        raise ValueError("Invalid month format. Supported format YYYY-MM.")
+        return FinishedMonthValidationResult(
+            valid=False,
+            error="Invalid month format. Supported format YYYY-MM."
+        )
 
-    return finished_month + "-01"
+    return FinishedMonthValidationResult(
+        valid=True,
+        value=finished_month + "-01"
+    )
