@@ -94,8 +94,9 @@ def normalize_finished_month(finished_month: str) -> FinishedMonthValidationResu
         finished_month: The month in which the book has been finished. Format: 'YYYY-MM'.
     
     Returns:
-        The normalized date the book has been finished.
+        The validation result.
     """
+
 
     if not re.fullmatch(r"\d{4}-\d{2}", finished_month):
         return FinishedMonthValidationResult(

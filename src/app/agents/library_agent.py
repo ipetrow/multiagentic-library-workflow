@@ -107,10 +107,12 @@ class LibraryAgent:
                 if not finished_month_validation_result.valid:
                     validation_results_dict = finished_month_validation_result.model_dump()
                     context_item = ContextToolOutputItem(
-                                    tool_call_id = tool_call.call_id,
-                                    tool_output = json.dumps(validation_results_dict)
-                                )
+                            tool_call_id = tool_call.call_id,
+                            tool_output = json.dumps(validation_results_dict)
+                        )
                     continue
+
+                tool_args["finished_month"] = finished_month_validation_result.value
 
             tool_result: ToolCallResponse = await self._tool_registry.execute(
                 tool_name=tool_name, 

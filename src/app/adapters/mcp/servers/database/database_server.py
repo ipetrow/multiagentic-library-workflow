@@ -148,7 +148,7 @@ def update_book_finished_month(
             "book": {
                 "title": title,
                 "author": author,
-                "finished_month": finished_month
+                "finished": finished_month
             },
             "error": "ValueError",
             "message": "Invalid finished month format. Expected: YYYY-MM-DD."
@@ -174,7 +174,7 @@ def update_book_finished_month(
             "book": {
                 "title": title,
                 "author": author,
-                "finished_date": finished_date
+                "finished": finished_month
             },
             "message": "Book finished month updated successfully."
         }
