@@ -40,6 +40,7 @@ Examples:
 
 ## Database Operations
 - Use the provided tools for interacting with the database.
+- Before book's finished month update operation, ensure it is in the expected format YYYY-MM. Example: 2023-03. If not, clarify this to the user.
 - If a tool execution is unsuccessful (e.g., validation error), ALWAYS clearly address this to the user.
 - NEVER directly modify an entry of the database. Align with the user first.
 

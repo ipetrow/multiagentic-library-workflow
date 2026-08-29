@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 from mcp.server.fastmcp import FastMCP
 
@@ -115,6 +116,74 @@ def update_book_reading_status(
                 "title": title,
                 "author": author,
                 "reading_status": reading_status
+            },
+            "error": "BookNotFoundError",
+            "message": "Book not found in database."
+        }
+
+    return json.dumps(update_status)
+
+@mcp.tool()
+def update_book_finished_month(
+    title: str, 
+    author: str, 
+    finished_month: str
+) -> str:
+    """
+        Update book's finished month by title and author
+
+        Args: 
+            title: book's title
+            author: book's author
+            finished_month: book's finished month
+        Returns:
+            The result of the update operation in a JSON string format.
+    """
+
+    try:
+        finished_date = date.fromisoformat(finished_month)
+    except ValueError:
+        update_status = {
+            "success": False,
+            "book": {
+                "title": title,
+                "author": author,
+                "finished_month": finished_month
+            },
+            "error": "ValueError",
+            "message": "Invalid finished month format. Expected: YYYY-MM-DD."
+        }
+
+    book_id = db.get_id(title=title, author=author)
+
+    if book_id is None:
+        update_status = {
+            "success": False,
+            "book": {
+                "title": title,
+                "author": author
+            },
+            "error": "BookNotFoundError",
+            "message": "Book not found in database."
+        }
+        
+    try:
+        db.update_finished_month(book_id=book_id, finished_date=finished_date)
+        update_status = {
+            "success": True,
+            "book": {
+                "title": title,
+                "author": author,
+                "finished_date": finished_date
+            },
+            "message": "Book finished month updated successfully."
+        }
+    except BookNotFoundError as ex:
+        update_status = {
+            "success": False,
+            "book": {
+                "title": title,
+                "author": author
             },
             "error": "BookNotFoundError",
             "message": "Book not found in database."

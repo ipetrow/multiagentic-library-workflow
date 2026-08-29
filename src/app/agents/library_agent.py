@@ -20,7 +20,8 @@ from .models.models import BooksValidationResult
 
 from .utils.utils import (
     prepare_books_insertion,
-    validate_extracted_books
+    validate_extracted_books,
+    normalize_finished_month
 )
 
 SYSTEM_PROMPT = load_prompt(
@@ -96,6 +97,9 @@ class LibraryAgent:
                 }
 
                 tool_args = books_for_insertion_dict
+
+            if tool_name == "update_book_finished_month":
+                tool_args["finished_month"] = normalize_finished_month(tool_args["finished_month"])
 
             tool_result: ToolCallResponse = await self._tool_registry.execute(
                 tool_name=tool_name, 

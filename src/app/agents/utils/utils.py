@@ -1,3 +1,5 @@
+import re
+
 from src.app.schemas.extracted_book import ExtractedBook
 from src.app.domain.book.models import Book
 
@@ -8,7 +10,7 @@ from ..models.models import (
 
 def prepare_books_insertion(validated_extracted_books: list[ExtractedBook]) -> list[Book]:
     return [
-        validated_book.to_book() 
+        validated_book.to_book()
         for validated_book in validated_extracted_books
     ]
 
@@ -23,6 +25,7 @@ def validate_extracted_books(extracted_books: list[ExtractedBook]) -> BooksValid
         author = book.author
         pages_num = book.pages_num
         isbn = book.isbn
+        finished_month = book.finished_month
 
         if title:
             book.title = _normalize_text(title)
@@ -44,6 +47,12 @@ def validate_extracted_books(extracted_books: list[ExtractedBook]) -> BooksValid
                 book.isbn = normalized_isbn
             else:
                 errors.append("Invalid ISBN containing not only digits")
+
+        if finished_month:
+            try:
+                book.finished_month = normalize_finished_month(finished_month)
+            except ValueError as e:
+                errors.append(str(e))
 
         is_book_valid = True if not errors else False
 
@@ -69,3 +78,23 @@ def _normalize_isbn(isbn: str | None) -> str | None:
         return None
 
     return isbn.replace("-", "").replace(" ", "").upper()
+
+def normalize_finished_month(finished_month: str) -> str:
+    """
+    Convert the month the book has been finished to a date in the format 'YYYY-MM-DD'.
+    The normalization is done for an easier integration with the database DATE type. 
+    Being not of other importance, the set day is always the first of the month.
+
+    Example: '2023-03' -> '2023-03-01'.
+
+    Args:
+        finished_month: The month in which the book has been finished. Format: 'YYYY-MM'.
+    
+    Returns:
+            The normalized date the book has been finished.
+    """
+
+    if not re.fullmatch(r"\d{4}-\d{2}", finished_month):
+        raise ValueError("Invalid month format. Supported format YYYY-MM.")
+
+    return finished_month + "-01"
