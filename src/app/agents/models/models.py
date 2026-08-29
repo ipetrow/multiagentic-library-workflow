@@ -10,3 +10,9 @@ class BookValidationResult(BaseModel):
 class BooksValidationResult(BaseModel):
     valid: bool
     results: list[BookValidationResult]
+
+class FinishedMonthValidationResult(BaseModel):
+    valid: bool
+    value: str | None = None
+    error: str | None = None
+    

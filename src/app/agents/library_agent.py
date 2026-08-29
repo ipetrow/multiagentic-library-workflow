@@ -16,11 +16,15 @@ from src.app.skills.models import Skill
 from src.app.tools.tool_registry import ToolRegistry
 
 from .exceptions import MaxStepsExceededError
-from .models.models import BooksValidationResult
+from .models.models import (
+    BooksValidationResult,
+    FinishedMonthValidationResult
+)
 
 from .utils.utils import (
     prepare_books_insertion,
-    validate_extracted_books
+    validate_extracted_books,
+    normalize_finished_month
 )
 
 SYSTEM_PROMPT = load_prompt(
@@ -97,6 +101,19 @@ class LibraryAgent:
 
                 tool_args = books_for_insertion_dict
 
+            if tool_name == "update_book_finished_month":
+                finished_month_validation_result: FinishedMonthValidationResult = normalize_finished_month(tool_args["finished_month"])
+
+                if not finished_month_validation_result.valid:
+                    validation_results_dict = finished_month_validation_result.model_dump()
+                    context_item = ContextToolOutputItem(
+                            tool_call_id = tool_call.call_id,
+                            tool_output = json.dumps(validation_results_dict)
+                        )
+                    continue
+
+                tool_args["finished_month"] = finished_month_validation_result.value
+
             tool_result: ToolCallResponse = await self._tool_registry.execute(
                 tool_name=tool_name, 
                 tool_args=tool_args
@@ -110,3 +127,4 @@ class LibraryAgent:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
         
         return "\n\n".join(responses)
+    

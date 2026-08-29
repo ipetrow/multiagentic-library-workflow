@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from datetime import date
 
 from .exceptions import BookNotFoundError
 
@@ -32,7 +33,8 @@ class Database:
                     "title": row[2],
                     "author": row[3],
                     "pages_num": row[4],
-                    "reading_status": row[5]
+                    "finished_month": row[5],
+                    "reading_status": row[6]
                 }
                 for row in cur.execute(query)
             ]
@@ -58,13 +60,13 @@ class Database:
 
         query="""
             INSERT INTO books (
-                isbn, title, author, pages_num, reading_status
-            ) VALUES (?, ?, ?, ?, ?)
+                isbn, title, author, pages_num, finished_month, reading_status
+            ) VALUES (?, ?, ?, ?, ?, ?)
         """
 
         with self.connect() as conn:
             cur = conn.cursor()
-            cur.execute(query, (book.isbn, book.title, book.author, book.pages_num, book.reading_status))
+            cur.execute(query, (book.isbn, book.title, book.author, book.pages_num, book.finished_month, book.reading_status))
             conn.commit()
 
             return cur.lastrowid
@@ -91,6 +93,22 @@ class Database:
 
         with self.connect() as conn:
             cur = conn.cursor().execute(query, (reading_status, book_id))
+
+            if cur.rowcount == 0:
+                raise BookNotFoundError()
+
+            conn.commit()
+
+    def update_finished_month(self, book_id: int, finished_date: date) -> None:
+    
+        query = """
+            UPDATE books 
+            SET finished_month = ? 
+            WHERE id = ?
+        """
+
+        with self.connect() as conn:
+            cur = conn.cursor().execute(query, (finished_date, book_id))
 
             if cur.rowcount == 0:
                 raise BookNotFoundError()

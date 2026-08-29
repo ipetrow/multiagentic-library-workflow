@@ -21,7 +21,8 @@ ANALYSIS_MCP_TOOLS = frozenset({
 LIBRARY_MANAGEMENT_MCP_TOOLS = frozenset({
     "get_all_books",
     "insert_books",
-    "update_book_reading_status"
+    "update_book_reading_status",
+    "update_book_finished_month"
 })
 
 async def create_analysis_agent_tool_registry(

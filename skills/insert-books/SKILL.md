@@ -11,7 +11,6 @@ description: Handles the addition of books into the library database. Use when u
 
 ## Step 2: Data Validation
 - Ensure the data is consistent, complete and there are no entry duplications.
-- The book's author should be only one. 
 - In case of validation errors, ask the user for clarification. Explain which book is affected, what is missing or ambiguous, suggest resolution.
 - If optional data is missing, proceed with tool invocation without asking for configrmation.
 - Do NOT invent missing book information.
@@ -23,6 +22,7 @@ Required Book Fields
 
 Optional Book Fields
 - ISBN
+- finished month
 
 ## Step 3: Data Insertion
 Use the `insert_books` tool for adding the books.

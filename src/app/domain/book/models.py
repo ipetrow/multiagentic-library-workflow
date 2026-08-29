@@ -15,6 +15,7 @@ class Book:
     pages_num: int
     reading_status: ReadingStatus = ReadingStatus.NOT_STARTED
     isbn: str | None = None
+    finished_month: str | None = None
 
     @classmethod
     def from_dict(cls, book_data: dict) -> Book:
