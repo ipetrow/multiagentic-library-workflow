@@ -228,7 +228,7 @@ def get_reading_statistics(
         data.append(
             {
                 "month": month,
-                "count": count
+                "value": count
             }
         )
 

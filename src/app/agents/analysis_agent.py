@@ -74,5 +74,5 @@ class AnalysisAgent:
             )
         else:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
-        
+
         return "\n\n".join(responses)

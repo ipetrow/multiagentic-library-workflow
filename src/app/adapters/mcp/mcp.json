@@ -8,7 +8,8 @@
                 "src.app.adapters.mcp.servers.database.database_server"
             ],
             "env": {
-                "DATABASE_PATH": "${DATABASE_PATH}"
+                "DATABASE_PATH": "${DATABASE_PATH}",
+                "CHARTS_OUTPUT_DIR": "${CHARTS_OUTPUT_DIR}"
             }
         },
         "files": {
