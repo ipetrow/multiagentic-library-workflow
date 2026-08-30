@@ -7,6 +7,7 @@ from src.app.domain.book.models import ReadingStatus, Book
 from src.app.config import get_settings
 
 from .database import Database
+from .models import MonthlyStatistic
 from .exceptions import BookNotFoundError
 
 db = Database(get_settings().database_path)
@@ -190,6 +191,54 @@ def update_book_finished_month(
         }
 
     return json.dumps(update_status)
+
+@mcp.tool()
+def get_reading_statistics(
+    year: int
+) -> str:
+    """
+        Retrieve the reading statistics for a specified year.
+
+        Args: 
+            year: the year for which the reading statistics is prepared.
+        Returns:
+            A JSON string describing the reading statistics for an year, grouped by month.
+    """
+
+    start_date = date(year=year, month=1, day=1)
+    end_date = date(year=year + 1, month=1, day=1)
+
+    year_statistics: list[MonthlyStatistic] = db.get_books_read_by_month(
+        start_date=start_date,
+        end_date=end_date
+    )
+
+    counts = {
+        statistic.finished_month: statistic.count
+        for statistic in year_statistics
+    }
+
+    data = []
+    for month_number in range(1, 13):
+        month_date = date(year, month_number, 1)
+
+        month = month_date.strftime("%B")
+        count = counts.get(month_date, 0)
+
+        data.append(
+            {
+                "month": month,
+                "count": count
+            }
+        )
+
+    response = {
+        "unit": "books",
+        "year": year,
+        "data": data
+    }
+
+    return json.dumps(response)
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

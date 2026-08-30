@@ -3,6 +3,7 @@ import sqlite3
 from datetime import date
 
 from .exceptions import BookNotFoundError
+from .models import MonthlyStatistic
 
 from src.app.domain.book.models import Book, ReadingStatus
 
@@ -140,3 +141,31 @@ class Database:
         with self.connect() as conn:
             conn.cursor().execute(query)
             conn.commit()
+
+    def get_books_read_by_month(
+        self,
+        start_date: date, 
+        end_date: date
+    ) -> list[MonthlyStatistic]:
+        query = """
+            SELECT
+                finished_month,
+                COUNT(*) AS books_read
+            FROM books
+            WHERE finished_month >= ? AND finished_month < ?
+            GROUP BY finished_month
+            ORDER BY finished_month
+        """
+
+        with self.connect() as conn:
+            rows = conn.cursor().execute(query, (start_date, end_date)).fetchall()
+
+        year_statistics = [
+            MonthlyStatistic(
+                finished_month=row[0],
+                count=row[1]
+            )
+            for row in rows 
+        ]
+
+        return year_statistics
