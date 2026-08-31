@@ -11,6 +11,7 @@ class ChatSession:
         print("\n\nGuidelines:")
         print("- Type your queries or 'quit' to exit.")
         print("- Use YYYY-MM format for dates. Example: 'Book read in 2026-03'.")
+        print("- Generated charts can be found in 'output/charts'.")
         
         while True:
             try:

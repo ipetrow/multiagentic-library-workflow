@@ -2,6 +2,7 @@ from src.app.adapters.mcp.manager import MCPManager
 from src.app.adapters.mcp.models.models import MCPToolEntry
 from src.app.agents.analysis_agent import AnalysisAgent
 from src.app.services.delegate_analysis_service import DelegateAnalysisService
+from src.app.services.generate_bar_chart_service import GenerateBarChartService
 from src.app.services.retrieve_receipt_books import RetrieveReceiptBooksService
 from src.app.adapters.llm.anthropic_service import LLMService
 
@@ -11,11 +12,13 @@ from .tool_mcp import MCPTool
 from .tool_registry import ToolRegistry
 from .definitions.tool_definitions import (
     RETRIEVE_RECEIPT_BOOKS_TOOL,
-    DELEGATE_ANALYSIS_TOOL
+    DELEGATE_ANALYSIS_TOOL,
+    GENERATE_BAR_CHART_TOOL
 )
 
 ANALYSIS_MCP_TOOLS = frozenset({
-    "get_reading_statistics"
+    "get_reading_statistics",
+    "generate_bar_chart"
 })
 
 LIBRARY_MANAGEMENT_MCP_TOOLS = frozenset({
@@ -35,6 +38,13 @@ async def create_analysis_agent_tool_registry(
     agent_mcp_tools = await _filter_tools(available_tools=available_tools, allowed_tools=ANALYSIS_MCP_TOOLS)
 
     await _register_mcp_tools(tool_registry, mcp_manager, tools=agent_mcp_tools)
+
+    tool_registry.register(
+        HostTool(
+            definition=GENERATE_BAR_CHART_TOOL,
+            handler=GenerateBarChartService()
+        )
+    )
 
     return tool_registry
 

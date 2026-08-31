@@ -6,7 +6,7 @@ description: Creates visualizations from library data. Use when user explicitly 
 ## Execution Guidelines
 1. Select the proper charts for the visualization using the visualization guidelines.
 2. Select the tools for the requested visualization.
-3. Provide a concise summary of the generated charts and the data they represent. Include a brief insight into the presented data.
+3. Provide a concise summary of the generated charts (plus respectful file names) and the data they represent. Include a brief insight into the presented data.
 
 ## Visualization Guideline
 - Prefer a horizontal bar chart to show year-by-year comparison of number of books and pages read.
