@@ -41,12 +41,10 @@ class LibraryAgent:
     def __init__(
             self, 
             tool_registry: ToolRegistry, 
-            skill_registry: SkillRegistry, 
             llm: LLMService,
             skills: list[Skill]
     ):
         self._tool_registry = tool_registry
-        self._skill_registry = skill_registry
         self._llm = llm
         self._skills = skills
 
@@ -125,6 +123,6 @@ class LibraryAgent:
             )
         else:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
-        
+
         return "\n\n".join(responses)
     

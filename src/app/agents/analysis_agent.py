@@ -28,12 +28,10 @@ class AnalysisAgent:
     def __init__(
             self, 
             tool_registry: ToolRegistry, 
-            skill_registry: SkillRegistry, 
             llm: LLMService,
             skills: list[Skill]
     ):
         self._tool_registry = tool_registry
-        self._skill_registry = skill_registry
         self._llm = llm
         self._skills = skills
 

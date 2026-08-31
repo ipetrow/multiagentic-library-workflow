@@ -3,11 +3,13 @@ import json
 
 from .models import Skill
 
+SKILLS_FILE_PATH = Path("config/skills.json")
+
 class SkillRegistry:
 
-    def __init__(self, skill_config_path: Path):
+    def __init__(self):
 
-        with skill_config_path.open() as f:
+        with SKILLS_FILE_PATH.open() as f:
             available_skills: list[dict] = json.load(f)["skills"]
             self._skills: dict[str, Skill] = {
                 skill_dict["name"]: Skill(**skill_dict)
