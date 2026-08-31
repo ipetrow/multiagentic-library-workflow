@@ -1,8 +1,12 @@
 {
   "skills": [
     {
+      "name": "data-visualization",
+      "id": "skill_015hu8dgQZykHZGoLtgkR4py"
+    },
+    {
       "name": "insert-books",
-      "id": "skill_01NdYUKPG4ZWn5Qx5NTPYmtF"
+      "id": "skill_018cMD1VEBMyzoM36CkExWaF"
     }
   ]
 }
