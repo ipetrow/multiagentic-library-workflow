@@ -83,8 +83,9 @@ The application recognizes two types of tools:
     - `delegate_analysis`: A host tool that can be requested from the *Library Management* AI Agent for delegating an analysis task to the *Analysis* AI Subagent. The tool uses the `DelegateAnalysisService`.
     - `generate_bar_chart`: A host visualization tool that generates a horizontal bar chart presenting the reading analytics for a specified year. The tool encapsulates the `GenerateBarChartService` service. 
 
-**Example of a Bar Chart - Books Read Per Month (2026)**
-[Example of a Bar Chart - Books Read Per Month (2026)](output/charts/books-read-per-month-(2026)_2026-08-31_21-02-45.png)
+**Example of a Horizontal Bar Chart - Books Read Per Month (2026)**
+
+![Example of a Horizontal Bar Chart - Books Read Per Month (2026)](output/charts/books-read-per-month-(2026)_2026-08-31_21-02-45.png)
 
 ### Tool Management
 Each AI Agent has access to a specific set of tools. This deliberate permission constraint ensures *clear responsibility* and increased database *safety*. For example, the *Analysis* AI Subagent is not able to modify the database but only to request read-only operations. Database manipulations are strictly constrained to the *Library Management* AI Agent.
