@@ -4,25 +4,27 @@ This project evolves a previous [AI agentic two-step workflow](https://github.co
 # Use Case
 The application helps users to manage a digital representation of their personal library and analyze their collection for providing reading habits insights. 
 
-The following scenarious are supported: 
+The following scenarios are supported: 
 - Retrieve books data from a PDF receipt and input the data to the library.
 - Direct prompt queries for book insertion to the library.
 - Manage book reading statuses.
-- **[DEVELOPMENT IN PROGRESS]** Analyze books data and present it in the form of charts.
+- Analyze books data and present it in the form of charts.
 
 ## Example Interactions
 Through a chat session the users can interact with the application using a natural language.
 - "Import the following book -  ..."
 - "Import the books from the receipt"
 - "Update the reading status of the book with title ... to completed"
-- **[DEVELOPMENT IN PROGRESS]** "How many books, month by month, have I read so far this year?"
+- "Show the statistics for books read in 2026"
 
 # Implementation Scope
-The goals of the implementation were to explore the following concepts:
+The goals of the implementation was to design an agent system **without a high-level agent framework**. It explores the following concepts:
 - Designing a multi-agent autonomous system.
+- Agent-to-Agent delegation.
 - Extending agents' capabilities with Agentic Skills.
+- Separation of responsibilities between agents.
 - Exploring the human-in-the-loop design concept for ensuring data integrity.
-- Using the planning agentic design pattern to break down tasks into executable steps and avoid unintended outcomes.
+- Using the *planning agentic* design pattern to break down tasks into executable steps and avoid unintended outcomes.
 
 All topics were considered with clean architectural principles in mind. Isolating the LLM layer provides flexibility in choosing a different LLM provider based on the agents' specialization. 
 
@@ -35,7 +37,7 @@ The application entry point `__main__.py` and codebase is situated in `src/app/`
     - `llm/`: The LLM related logic - API calls, requests data mapping.
     - `mcp/`: The MCP Client-Server logic - client-server session creation and management, handling server primitives access.
 - `agents/`: All the available agents - main library management agent and the specialized subagents.
-- `services/`: Capabilities exposed to the LLM through a manually defined host tools.
+- `services/`: Capabilities exposed to the LLM through manually defined host tools.
 - `skills/`: Logic for managing all the available skills.
 - `prompts/`: Contains the agents' system prompts and regular prompts for strictly defined single LLM requests. 
 - `schemas/`: Schemas describing host tools exposed to the LLM.
@@ -62,29 +64,38 @@ The system includes the following AI agents:
     - Plans tasks execution steps.
     - Performs unspecialized tasks, requesting tool executions when necessary.
     - Answers general questions.
-2. **[DEVELOPMENT IN PROGRESS]** *Analysis* AI Subagent
+2. *Analysis* AI Subagent
     - Analyzes the available books database data based on the user's query.
-    - Provides an analysis summary in the form of charts.
+    - Provides an analysis summary in the form of charts and text.
 
 ## Agentic Skills
 The Skills are managed by a `SkillRegistry` which loads all available skills described in the `config/skills.json` file. For more details regarding the file creation, check the `Uploading Skills` section below.
 
 The system includes the following Agentic Skills:
 - `insert-books`: A Skill with precise step-by-step instructions for inserting books to the library database.
+- `data-visualization`: A Skill guiding the representation of analysed data in the form of charts. 
 
 ## Tools
 The application recognizes two types of tools:
 1. MCP tools: These tools are provided by the MCP layer. Their schemas are automatically generated. For detailed tools information check the `MCP Servers` section below.
 2. Host tools: These are standalone tools, not part of the MCP Servers. The schemas are manually defined in `src/app/schemas/`. Their purpose is to increase the AI agents' capabilities in making autonomous decisions.
     - `retrieve_receipt_books`: A host tool that can be requested from the *Library Management* AI Agent for retrieving books data from a receipt. It is an encapsulation of the `RetrieveReceiptBooksService` service which processes an MCP resource primitive. In this way, the AI Agent can autonomously decide, based on the user's request, when such action is needed.
+    - `delegate_analysis`: A host tool that can be requested from the *Library Management* AI Agent for delegating an analysis task to the *Analysis* AI Subagent. The tool uses the `DelegateAnalysisService`.
+    - `generate_bar_chart`: A host visualization tool that generates a horizontal bar chart presenting the reading analytics for a specified year. The tool encapsulates the `GenerateBarChartService` service. 
 
-All the tools are managed by a `ToolRegistry` situated in `src/app/tools/`.
+**Example of a Bar Chart - Books Read Per Month (2026)**
+[Example of a Bar Chart - Books Read Per Month (2026)](output/charts/books-read-per-month-(2026)_2026-08-31_21-02-45.png)
+
+### Tool Management
+Each AI Agent has access to a specific set of tools. This deliberate permission constraint ensures *clear responsibility* and increased database *safety*. For example, the *Analysis* AI Subagent is not able to modify the database but only to request read-only operations. Database manipulations are strictly constrained to the *Library Management* AI Agent.
+
+Both, the *Library Management* AI Agent and the *Analysis* AI Subagent, have a `ToolRegistry` instance used to manage the specific tools available. 
 
 ## Services
 The system includes the following services:
 - `RetrieveReceiptBooksService`: The service consists of two steps. It first gets the MCP receipt resource. Afterwards, it makes a single LLM request for retrieving all the books in the provided file.
-
-**Note** The retrieved data is being returned to the *Library Management* AI Agent for further processing.
+- `DelegateAnalysisService`: The service delegates an analysis task to the *Analysis* AI Subagent.
+- `GenerateBarChartService`: The service creates a horizontal bar chart based on the retrieved data. Except the reading information, retrieved from the database grouped by month, the chart title and labels are provided by the LLM. The charts are being saved in `output/charts` as PNGs.
 
 ## API
 For the API layer, a MCP Client-Server standard is being used. The MCP Servers are created using `FastMCP` with `stdio` as transport layer. 
@@ -110,9 +121,11 @@ There are two main files containing the logic related with the Anthropic Claude 
 - `app/llm/anthropic_mapper.py`: Contains a mapper class which handles many of the LLM API specifics. It is an additional layer which aims to simplify the process of migration to another LLM provider if needed.
 
 ## Database
-It is a simplistic SQLite database named `bookslog`, consisting of only one  `books` table. The main idea is to store books information - ***isbn***, ***title***, ***author***, ***number of pages*** and ***reading status***. For convenience and simplicity of the demo, a book can have only one author stored as a string.
+It is a simplistic SQLite database named `bookslog`, consisting of only one  `books` table. The main idea is to store books information - ***isbn***, ***title***, ***author***, ***number of pages***, ***finished month*** and ***reading status***. 
 
 The database path for the production application is set in the `.env` file and loaded right at the beginning of the application start.
+
+**Note**: For convenience and simplicity of the demo, a book can have only one author stored as a string.
 
 ## Data Integrity
 A main functionality of the application is retrieving books data from a direct user query or a provided receipt. This process is error prone. To ensure the data integrity, before the database insertion operation, multiple layers of validations are being implemented:
@@ -121,6 +134,9 @@ A main functionality of the application is retrieving books data from a direct u
 - Book duplication check in the database layer.
 
 All found data integrity issues are clarified with the user through the active chat session.
+
+## Dependencies
+The project uses the following external Python modules: **mcp**, **anthropic**, **pydantic**, **matplotlib**, **pandas**, **python-dotenv**.
 
 # Running the Project
 ## Setup

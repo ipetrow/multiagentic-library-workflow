@@ -26,13 +26,13 @@ class AnthropicService(LLMService):
                 "AZURE_ANTHROPIC_API_KEY environment variable is empty."
             )
         
-        self.anthropic = AnthropicFoundry(
+        self._anthropic = AnthropicFoundry(
             api_key=api_key,
             base_url=ENDPOINT
         )
 
-        self.adapter = AnthropicContextMapper()
-        self.context = []
+        self._adapter = AnthropicContextMapper()
+        self._context = []
 
     async def process(
             self, 
@@ -53,8 +53,8 @@ class AnthropicService(LLMService):
         """
 
         serialized_context_item = await self._serialize_context_item(context_item)
-        self.context.append(serialized_context_item)
-        serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
+        self._context.append(serialized_context_item)
+        serialized_tools = await self._adapter.serialize_tools(available_tools) if available_tools else []
 
         request_params = await self._build_create_message(
             serialized_tools=serialized_tools, 
@@ -63,7 +63,7 @@ class AnthropicService(LLMService):
         )
 
         try:
-            response = self.anthropic.messages.create(**request_params)
+            response = self._anthropic.messages.create(**request_params)
         except Exception as ex:
             print(f"Exception: {ex}")
 
@@ -89,9 +89,9 @@ class AnthropicService(LLMService):
         """
 
         serialized_context_item = await self._serialize_context_item(context_item)
-        self.context.append(serialized_context_item)
-        serialized_tools = await self.adapter.serialize_tools(available_tools) if available_tools else []
-        serialized_skills = await self.adapter.serialize_skills(skills) if skills else []
+        self._context.append(serialized_context_item)
+        serialized_tools = await self._adapter.serialize_tools(available_tools) if available_tools else []
+        serialized_skills = await self._adapter.serialize_skills(skills) if skills else []
 
         request_params = await self._build_create_beta_message(
             serialized_tools=serialized_tools,
@@ -101,7 +101,7 @@ class AnthropicService(LLMService):
         )
 
         try:
-            response = self.anthropic.beta.messages.create(**request_params)
+            response = self._anthropic.beta.messages.create(**request_params)
         except Exception as ex:
             print(f"Exception: {ex}")
 
@@ -113,12 +113,12 @@ class AnthropicService(LLMService):
         ) -> dict:
 
         if isinstance(context_item, ContextRoleItem):
-            return await self.adapter.serialize_context_role_item(context_item)
+            return await self._adapter.serialize_context_role_item(context_item)
         elif isinstance(context_item, ContextToolOutputItem):
-            return await self.adapter.serialize_context_tool_output_item(context_item)
+            return await self._adapter.serialize_context_tool_output_item(context_item)
 
     async def _process_response(self, response) -> LLMResponse:
-        self.context.append(
+        self._context.append(
             {
                 "role": "assistant",
                 "content": response.content
@@ -157,7 +157,7 @@ class AnthropicService(LLMService):
         request_params = {
             "model": MODEL,
             "max_tokens": MAX_TOKENS, 
-            "messages": self.context
+            "messages": self._context
         }
 
         if serialized_tools:
@@ -189,7 +189,7 @@ class AnthropicService(LLMService):
             "container": {
                 "skills": serialized_skills
             },  
-            "messages": self.context,
+            "messages": self._context,
             "tools": serialized_tools + [{"type": "code_execution_20250825", "name": "code_execution"}],
             "tool_choice": {"type": "auto", "disable_parallel_tool_use": True},
         }
