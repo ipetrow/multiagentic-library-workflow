@@ -10,10 +10,10 @@ from src.app.domain.book.models import Book, ReadingStatus
 class Database: 
 
     def __init__(self, db_path: str):
-        self.db_path = db_path
+        self._db_path = db_path
 
     def connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.db_path)
+        return sqlite3.connect(self._db_path)
     
     def get_all_books(self) -> str:
         """
