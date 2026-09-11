@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from .models import EventType
+
 class EventLogger:
 
     def __init__(
@@ -22,7 +24,7 @@ class EventLogger:
 
     async def log(
         self,
-        event: str,
+        event: EventType,
         agent: str | None = None,
         input_tokens: int | None = None,
         output_tokens: int | None = None,
@@ -31,17 +33,21 @@ class EventLogger:
 
         now = datetime.now()
 
+        event_value: str = event.value
+
         record = {
             "run_id": self._run_id,
-            "agent": agent,
-            "event": event,
+            "event": event_value,
             "data": data
         }
 
-        if event.endswith("_start"):
+        if agent is not None:
+            record["agent"] = agent
+
+        if event_value.endswith("_start"):
             record["start_at"] = now.isoformat()
 
-        if event.endswith("_end"):
+        if event_value.endswith("_end"):
             record["end_at"] = now.isoformat()
 
         if input_tokens is not None:

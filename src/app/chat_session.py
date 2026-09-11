@@ -1,9 +1,12 @@
 from src.app.agents.library_agent import LibraryAgent
+from src.app.observability.event_logger import EventLogger
+from src.app.observability.models import EventType
 
 class ChatSession:
 
-    def __init__(self, agent: LibraryAgent):
+    def __init__(self, agent: LibraryAgent, event_logger: EventLogger):
         self._agent = agent
+        self._event_logger = event_logger
 
     async def run(self):
         """Run an interactive chat session"""
@@ -20,7 +23,16 @@ class ChatSession:
                 if query.lower() == "quit":
                     break
 
+                self._event_logger.log(
+                    event=EventType.TASK_START
+                )
+
                 response = await self._agent.run(query)
+
+                self._event_logger.log(
+                    event=EventType.TASK_END
+                )
+
                 print("\n" + response)
             except Exception as e:
                 print(f"\nError: {str(e)}")

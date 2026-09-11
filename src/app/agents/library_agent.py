@@ -7,9 +7,10 @@ from src.app.adapters.llm.models.models import (
     ContextToolOutputItem
 )
 from src.app.adapters.mcp.models.models import ToolCallResponse
-from src.app.adapters.llm.models.llm_response import LLMResponse, ToolUse
+from src.app.adapters.llm.models.llm_response import LLMResponse
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.observability.event_logger import EventLogger
+from src.app.observability.models import EventType
 from src.app.prompts.utils.prompts import load_prompt
 from src.app.schemas.extracted_book import ExtractedBooks
 from src.app.skills.models import Skill
@@ -53,6 +54,11 @@ class LibraryAgent(Agent):
         )
 
     async def run(self, prompt: str) -> str:
+
+        self._log(
+            agent="unknown",
+            event=EventType.AGENT_START
+        )
             
         responses: list[LLMResponse] = []
 
@@ -124,6 +130,11 @@ class LibraryAgent(Agent):
             )
         else:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
+
+        self._log(
+            agent="unknown",
+            event=EventType.AGENT_END
+        )
 
         return "\n\n".join(responses)
     

@@ -5,9 +5,10 @@ from src.app.adapters.llm.models.models import (
 ) 
 from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.base_service import LLMService
-from src.app.adapters.llm.models.llm_response import LLMResponse, ToolUse
+from src.app.adapters.llm.models.llm_response import LLMResponse
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.observability.event_logger import EventLogger
+from src.app.observability.models import EventType
 from src.app.prompts.utils.prompts import load_prompt
 from src.app.skills.models import Skill
 from src.app.tools.tool_registry import ToolRegistry
@@ -41,6 +42,11 @@ class AnalysisAgent(Agent):
         )
         
     async def run(self, prompt: str) -> str:
+
+        self._log(
+            agent="unknown",
+            event=EventType.AGENT_START
+        )
                     
         responses: list[LLMResponse] = []
 
@@ -74,5 +80,10 @@ class AnalysisAgent(Agent):
             )
         else:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
+
+        self._log(
+            agent="unknown",
+            event=EventType.AGENT_END
+        )
 
         return "\n\n".join(responses)
