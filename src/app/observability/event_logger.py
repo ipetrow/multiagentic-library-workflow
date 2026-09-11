@@ -24,8 +24,8 @@ class EventLogger:
         self,
         event: str,
         agent: str | None = None,
-        input_tokens: str | None = None,
-        output_tokens: str | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
         **data: Any
     ) -> None:
 

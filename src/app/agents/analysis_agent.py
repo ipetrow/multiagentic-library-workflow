@@ -7,6 +7,7 @@ from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.base_service import LLMService
 from src.app.adapters.llm.models.llm_response import LLMResponse, ToolUse
 from src.app.domain.prompt.models import Prompt, PromptType
+from src.app.observability.event_logger import EventLogger
 from src.app.prompts.utils.prompts import load_prompt
 from src.app.skills.models import Skill
 from src.app.tools.tool_registry import ToolRegistry
@@ -29,12 +30,14 @@ class AnalysisAgent(Agent):
             self, 
             tool_registry: ToolRegistry, 
             llm: LLMService,
-            skills: list[Skill]
+            skills: list[Skill],
+            event_loger: EventLogger
     ):
         super().__init__(
             _tool_registry = tool_registry,
             _llm = llm,
-            _skills = skills
+            _skills = skills,
+            _event_logger = event_loger
         )
         
     async def run(self, prompt: str) -> str:

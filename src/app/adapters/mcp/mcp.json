@@ -9,7 +9,8 @@
             ],
             "env": {
                 "DATABASE_PATH": "${DATABASE_PATH}",
-                "CHARTS_OUTPUT_DIR": "${CHARTS_OUTPUT_DIR}"
+                "CHARTS_OUTPUT_DIR": "${CHARTS_OUTPUT_DIR}",
+                "LOGS_OUTPUT_DIR": "${LOGS_OUTPUT_DIR}"
             }
         },
         "files": {
