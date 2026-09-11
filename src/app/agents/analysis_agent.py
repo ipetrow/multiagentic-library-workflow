@@ -5,13 +5,13 @@ from src.app.adapters.llm.models.models import (
 ) 
 from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.base_service import LLMService
-from src.app.adapters.llm.models.llm_response import LLMResponse
+from src.app.adapters.llm.models.llm_response import LLMResponse, ToolUse
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.prompts.utils.prompts import load_prompt
-from src.app.skills.skill_registry import SkillRegistry
 from src.app.skills.models import Skill
 from src.app.tools.tool_registry import ToolRegistry
 
+from .agent import Agent
 from .exceptions import MaxStepsExceededError
 
 SYSTEM_PROMPT = load_prompt(
@@ -23,7 +23,7 @@ SYSTEM_PROMPT = load_prompt(
 
 MAX_STEPS = 10
 
-class AnalysisAgent:
+class AnalysisAgent(Agent):
 
     def __init__(
             self, 
@@ -31,10 +31,12 @@ class AnalysisAgent:
             llm: LLMService,
             skills: list[Skill]
     ):
-        self._tool_registry = tool_registry
-        self._llm = llm
-        self._skills = skills
-
+        super().__init__(
+            _tool_registry = tool_registry,
+            _llm = llm,
+            _skills = skills
+        )
+        
     async def run(self, prompt: str) -> str:
                     
         responses: list[LLMResponse] = []
@@ -61,10 +63,7 @@ class AnalysisAgent:
             if llm_response.is_final: # no function calls - agentic loop termination
                 break
 
-            tool_result: ToolCallResponse = await self._tool_registry.execute(
-                tool_name=tool_call.tool_name,
-                tool_args=tool_call.tool_args
-            )
+            tool_result: ToolCallResponse = await super().execute_tool(tool_call=tool_call)
 
             context_item = ContextToolOutputItem(
                 tool_call_id=tool_call.call_id,

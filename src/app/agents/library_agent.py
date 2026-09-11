@@ -7,20 +7,19 @@ from src.app.adapters.llm.models.models import (
     ContextToolOutputItem
 )
 from src.app.adapters.mcp.models.models import ToolCallResponse
-from src.app.adapters.llm.models.llm_response import LLMResponse
+from src.app.adapters.llm.models.llm_response import LLMResponse, ToolUse
 from src.app.domain.prompt.models import Prompt, PromptType
 from src.app.prompts.utils.prompts import load_prompt
 from src.app.schemas.extracted_book import ExtractedBooks
-from src.app.skills.skill_registry import SkillRegistry
 from src.app.skills.models import Skill
 from src.app.tools.tool_registry import ToolRegistry
 
+from .agent import Agent
 from .exceptions import MaxStepsExceededError
 from .models.models import (
     BooksValidationResult,
     FinishedMonthValidationResult
 )
-
 from .utils.utils import (
     prepare_books_insertion,
     validate_extracted_books,
@@ -36,17 +35,19 @@ SYSTEM_PROMPT = load_prompt(
 
 MAX_STEPS = 10
 
-class LibraryAgent:
+class LibraryAgent(Agent):
 
     def __init__(
-            self, 
-            tool_registry: ToolRegistry, 
-            llm: LLMService,
-            skills: list[Skill]
+        self, 
+        tool_registry: ToolRegistry, 
+        llm: LLMService,
+        skills: list[Skill]
     ):
-        self._tool_registry = tool_registry
-        self._llm = llm
-        self._skills = skills
+        super().__init__(
+            _tool_registry = tool_registry,
+            _llm = llm,
+            _skills = skills
+        )
 
     async def run(self, prompt: str) -> str:
             
@@ -112,10 +113,7 @@ class LibraryAgent:
 
                 tool_args["finished_month"] = finished_month_validation_result.value
 
-            tool_result: ToolCallResponse = await self._tool_registry.execute(
-                tool_name=tool_name, 
-                tool_args=tool_args
-            )
+            tool_result: ToolCallResponse = await super().execute_tool(tool_call=tool_call)
 
             context_item = ContextToolOutputItem(
                 tool_call_id=tool_call.call_id,

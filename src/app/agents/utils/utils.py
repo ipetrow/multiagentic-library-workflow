@@ -97,7 +97,6 @@ def normalize_finished_month(finished_month: str) -> FinishedMonthValidationResu
         The validation result.
     """
 
-
     if not re.fullmatch(r"\d{4}-\d{2}", finished_month):
         return FinishedMonthValidationResult(
             valid=False,
