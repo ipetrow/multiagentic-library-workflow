@@ -31,11 +31,11 @@ class Agent(ABC):
     async def run(self, prompt: str) -> str:
         raise NotImplementedError
 
-    async def execute_llm_request(self, context_item: ContextRoleItem, system_prompt: str, promt: str) -> LLMResponse:
+    async def execute_llm_request(self, context_item: ContextRoleItem, system_prompt: str, prompt: str) -> LLMResponse:
         await self._log(
             agent=self._name,
             event=EventType.LLM_START,
-            query=promt
+            query=prompt
         )
 
         llm_response: LLMResponse = await self._llm.process_beta(
@@ -54,10 +54,7 @@ class Agent(ABC):
         
         return llm_response
 
-    async def execute_tool(self, tool_call: ToolUse) -> ToolCallResponse:
-        tool_name=tool_call.tool_name, 
-        tool_args=tool_call.tool_args
-
+    async def execute_tool(self, tool_name: str, tool_args: str) -> ToolCallResponse:
         await self._log(
             agent=self._name,
             event = EventType.TOOL_START,

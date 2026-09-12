@@ -72,7 +72,10 @@ class AnalysisAgent(Agent):
             if llm_response.is_final: # no function calls - agentic loop termination
                 break
 
-            tool_result: ToolCallResponse = await super().execute_tool(tool_call=tool_call)
+            tool_result: ToolCallResponse = await super().execute_tool(
+                tool_name=tool_call.tool_name, 
+                tool_args=tool_call.tool_args
+            )
 
             context_item = ContextToolOutputItem(
                 tool_call_id=tool_call.call_id,

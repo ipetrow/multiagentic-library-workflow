@@ -76,7 +76,7 @@ class LibraryAgent(Agent):
             llm_response: LLMResponse = await self.execute_llm_request(
                 context_item=context_item,
                 system_prompt=SYSTEM_PROMPT,
-                promt=prompt
+                prompt=prompt
             )
             responses.append(llm_response.response)
 
@@ -122,7 +122,10 @@ class LibraryAgent(Agent):
 
                 tool_args["finished_month"] = finished_month_validation_result.value
 
-            tool_result: ToolCallResponse = await super().execute_tool(tool_call=tool_call)
+            tool_result: ToolCallResponse = await super().execute_tool(
+                tool_name=tool_name, 
+                tool_args=tool_args
+            )
 
             context_item = ContextToolOutputItem(
                 tool_call_id=tool_call.call_id,
