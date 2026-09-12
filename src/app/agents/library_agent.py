@@ -47,16 +47,17 @@ class LibraryAgent(Agent):
         event_loger: EventLogger
     ):
         super().__init__(
-            _tool_registry = tool_registry,
-            _llm = llm,
-            _skills = skills,
-            _event_logger = event_loger
+            name = "library",
+            tool_registry = tool_registry,
+            llm = llm,
+            skills = skills,
+            event_logger = event_loger
         )
 
     async def run(self, prompt: str) -> str:
 
-        self._log(
-            agent="unknown",
+        await self._log(
+            agent=self._name,
             event=EventType.AGENT_START
         )
             
@@ -72,11 +73,10 @@ class LibraryAgent(Agent):
         )
 
         for _ in range(MAX_STEPS):
-            llm_response: LLMResponse = await self._llm.process_beta(
-                context_item = context_item, 
-                skills = self._skills,
-                system_prompt = SYSTEM_PROMPT,
-                available_tools = self._tool_registry.list_definitions()
+            llm_response: LLMResponse = await self.execute_llm_request(
+                context_item=context_item,
+                system_prompt=SYSTEM_PROMPT,
+                promt=prompt
             )
             responses.append(llm_response.response)
 
@@ -131,8 +131,8 @@ class LibraryAgent(Agent):
         else:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
 
-        self._log(
-            agent="unknown",
+        await self._log(
+            agent=self._name,
             event=EventType.AGENT_END
         )
 

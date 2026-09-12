@@ -13,5 +13,8 @@ class EventType(str, Enum):
     TOOL_START = "tool_start"
     TOOL_END = "tool_end"
 
+    LLM_START = "llm_start"
+    LLM_END = "llm_end"
+
     ERROR = "error"
     

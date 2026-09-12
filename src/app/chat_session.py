@@ -23,17 +23,23 @@ class ChatSession:
                 if query.lower() == "quit":
                     break
 
-                self._event_logger.log(
+                await self._event_logger.log(
                     event=EventType.TASK_START
                 )
 
                 response = await self._agent.run(query)
 
-                self._event_logger.log(
+                await self._event_logger.log(
                     event=EventType.TASK_END
                 )
 
                 print("\n" + response)
             except Exception as e:
+                await self._event_logger.log(
+                    event=EventType.ERROR,
+                    error_type=type(e).__name__,
+                    message=str(e)
+                )
+
                 print(f"\nError: {str(e)}")
 

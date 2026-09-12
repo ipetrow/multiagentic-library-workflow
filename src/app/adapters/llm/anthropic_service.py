@@ -8,7 +8,7 @@ from src.app.tools.definitions.tool_definition import ToolDefinition
 
 from .base_service import LLMService
 from .models.llm_response import ToolUse
-from .models.llm_response import LLMResponse
+from .models.llm_response import LLMResponse, LLMUsage
 from .models.models import ContextRoleItem, ContextItem, ContextToolOutputItem
 from .anthropic_mapper import AnthropicContextMapper
 
@@ -145,7 +145,11 @@ class AnthropicService(LLMService):
 
         return LLMResponse(
             response = assisstent_response_text, 
-            tool_use = tool_use
+            tool_use = tool_use,
+            usage=LLMUsage(
+                input_tokens=response.usage.input_tokens, 
+                output_tokens=response.usage.output_tokens
+            )
         )
 
     async def _build_create_message(

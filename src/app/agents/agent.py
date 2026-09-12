@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+from src.app.adapters.llm.models.models import ContextRoleItem
 from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.base_service import LLMService
+from src.app.adapters.llm.models.llm_response import LLMResponse
 from src.app.adapters.llm.models.llm_response import ToolUse
 from src.app.observability.event_logger import EventLogger
 from src.app.observability.models import EventType
@@ -13,11 +15,13 @@ class Agent(ABC):
 
     def __init__(
         self, 
+        name: str,
         tool_registry: ToolRegistry, 
         llm: LLMService,
         skills: list[Skill],
         event_logger: EventLogger
     ):
+        self._name = name
         self._tool_registry = tool_registry
         self._llm = llm
         self._skills = skills
@@ -27,15 +31,35 @@ class Agent(ABC):
     async def run(self, prompt: str) -> str:
         raise NotImplementedError
 
-    async def execute_llm_request(self):
-        pass
+    async def execute_llm_request(self, context_item: ContextRoleItem, system_prompt: str, promt: str) -> LLMResponse:
+        await self._log(
+            agent=self._name,
+            event=EventType.LLM_START,
+            query=promt
+        )
+
+        llm_response: LLMResponse = await self._llm.process_beta(
+            context_item = context_item, 
+            skills = self._skills,
+            system_prompt = system_prompt,
+            available_tools = self._tool_registry.list_definitions()
+        )
+
+        await self._log(
+            agent=self._name,
+            event=EventType.LLM_END,
+            input_tokens = llm_response.usage.input_tokens,
+            output_tokens = llm_response.usage.output_tokens
+        )
+        
+        return llm_response
 
     async def execute_tool(self, tool_call: ToolUse) -> ToolCallResponse:
         tool_name=tool_call.tool_name, 
         tool_args=tool_call.tool_args
 
         await self._log(
-            agent="unknown",
+            agent=self._name,
             event = EventType.TOOL_START,
             tool_name=tool_name, 
             tool_args=tool_args
@@ -47,7 +71,7 @@ class Agent(ABC):
         )
 
         await self._log(
-            agent="unknown",
+            agent=self._name,
             event = EventType.TOOL_END,
             tool_name=tool_name,
             tool_result=tool_result.content

@@ -73,6 +73,6 @@ class EventLogger:
         except Exception as ex:
             print(f"Event loggins failed: {ex}")
 
-    async def _append_line(self, line: str) -> None:
+    def _append_line(self, line: str) -> None:
         with self._path.open("a", encoding="utf-8") as file:
             file.write(line + "\n")
