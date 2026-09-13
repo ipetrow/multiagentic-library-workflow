@@ -7,8 +7,15 @@ class ToolUse:
     call_id: str
 
 @dataclass
+class LLMUsage:
+    input_tokens: int
+    output_tokens: int
+
+@dataclass
 class LLMResponse:
-    response: str | None = None
+    call_id: str
+    response: str
+    usage: LLMUsage
     tool_use: ToolUse | None = None
 
     @property

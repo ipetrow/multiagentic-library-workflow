@@ -8,7 +8,7 @@ from src.app.tools.definitions.tool_definition import ToolDefinition
 
 from .base_service import LLMService
 from .models.llm_response import ToolUse
-from .models.llm_response import LLMResponse
+from .models.llm_response import LLMResponse, LLMUsage
 from .models.models import ContextRoleItem, ContextItem, ContextToolOutputItem
 from .anthropic_mapper import AnthropicContextMapper
 
@@ -144,7 +144,12 @@ class AnthropicService(LLMService):
         assisstent_response_text = "\n".join(content_item_texts)
 
         return LLMResponse(
+            call_id = response.id,
             response = assisstent_response_text, 
+            usage=LLMUsage(
+                input_tokens=response.usage.input_tokens, 
+                output_tokens=response.usage.output_tokens
+            ),
             tool_use = tool_use
         )
 
@@ -162,7 +167,7 @@ class AnthropicService(LLMService):
 
         if serialized_tools:
             request_params["tools"] = serialized_tools
-            request_params["totool_choiceols"] = {"type": "auto", "disable_parallel_tool_use": True}
+            request_params["tool_choice"] = {"type": "auto", "disable_parallel_tool_use": True}
 
         request_params = await self._add_system_prompt_param(
             request_params=request_params, 

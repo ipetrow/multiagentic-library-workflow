@@ -9,18 +9,19 @@ from src.app.adapters.llm.models.models import (
 from src.app.adapters.mcp.models.models import ToolCallResponse
 from src.app.adapters.llm.models.llm_response import LLMResponse
 from src.app.domain.prompt.models import Prompt, PromptType
+from src.app.observability.event_logger import EventLogger
+from src.app.observability.models import EventType
 from src.app.prompts.utils.prompts import load_prompt
 from src.app.schemas.extracted_book import ExtractedBooks
-from src.app.skills.skill_registry import SkillRegistry
 from src.app.skills.models import Skill
 from src.app.tools.tool_registry import ToolRegistry
 
+from .agent import Agent
 from .exceptions import MaxStepsExceededError
 from .models.models import (
     BooksValidationResult,
     FinishedMonthValidationResult
 )
-
 from .utils.utils import (
     prepare_books_insertion,
     validate_extracted_books,
@@ -36,19 +37,29 @@ SYSTEM_PROMPT = load_prompt(
 
 MAX_STEPS = 10
 
-class LibraryAgent:
+class LibraryAgent(Agent):
 
     def __init__(
-            self, 
-            tool_registry: ToolRegistry, 
-            llm: LLMService,
-            skills: list[Skill]
+        self, 
+        tool_registry: ToolRegistry, 
+        llm: LLMService,
+        skills: list[Skill],
+        event_loger: EventLogger
     ):
-        self._tool_registry = tool_registry
-        self._llm = llm
-        self._skills = skills
+        super().__init__(
+            name = "library",
+            tool_registry = tool_registry,
+            llm = llm,
+            skills = skills,
+            event_logger = event_loger
+        )
 
     async def run(self, prompt: str) -> str:
+
+        await self._log(
+            agent=self._name,
+            event=EventType.AGENT_START
+        )
             
         responses: list[LLMResponse] = []
 
@@ -62,11 +73,10 @@ class LibraryAgent:
         )
 
         for _ in range(MAX_STEPS):
-            llm_response: LLMResponse = await self._llm.process_beta(
-                context_item = context_item, 
-                skills = self._skills,
-                system_prompt = SYSTEM_PROMPT,
-                available_tools = self._tool_registry.list_definitions()
+            llm_response: LLMResponse = await self.execute_llm_request(
+                context_item=context_item,
+                system_prompt=SYSTEM_PROMPT,
+                prompt=prompt
             )
             responses.append(llm_response.response)
 
@@ -112,7 +122,7 @@ class LibraryAgent:
 
                 tool_args["finished_month"] = finished_month_validation_result.value
 
-            tool_result: ToolCallResponse = await self._tool_registry.execute(
+            tool_result: ToolCallResponse = await super().execute_tool(
                 tool_name=tool_name, 
                 tool_args=tool_args
             )
@@ -123,6 +133,11 @@ class LibraryAgent:
             )
         else:
             raise MaxStepsExceededError(f"Agent maximum number of allowed interactions {MAX_STEPS} has been reached!")
+
+        await self._log(
+            agent=self._name,
+            event=EventType.AGENT_END
+        )
 
         return "\n\n".join(responses)
     

@@ -5,9 +5,11 @@ import os
 class Settings:
     database_path: str
     charts_output_dir: str
+    logs_output_dir: str
 
 def get_settings() -> Settings:
     return Settings(
         database_path=os.environ["DATABASE_PATH"],
-        charts_output_dir=os.environ["CHARTS_OUTPUT_DIR"]
+        charts_output_dir=os.environ["CHARTS_OUTPUT_DIR"],
+        logs_output_dir=os.environ["LOGS_OUTPUT_DIR"]
     )
