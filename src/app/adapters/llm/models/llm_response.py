@@ -13,6 +13,7 @@ class LLMUsage:
 
 @dataclass
 class LLMResponse:
+    call_id: str
     response: str
     usage: LLMUsage
     tool_use: ToolUse | None = None

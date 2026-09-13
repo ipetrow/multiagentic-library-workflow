@@ -48,6 +48,7 @@ class Agent(ABC):
         await self._log(
             agent=self._name,
             event=EventType.LLM_END,
+            call_id=llm_response.call_id,
             input_tokens = llm_response.usage.input_tokens,
             output_tokens = llm_response.usage.output_tokens
         )

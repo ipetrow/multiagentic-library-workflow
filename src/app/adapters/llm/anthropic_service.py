@@ -144,6 +144,7 @@ class AnthropicService(LLMService):
         assisstent_response_text = "\n".join(content_item_texts)
 
         return LLMResponse(
+            call_id = response.id,
             response = assisstent_response_text, 
             usage=LLMUsage(
                 input_tokens=response.usage.input_tokens, 
@@ -166,7 +167,7 @@ class AnthropicService(LLMService):
 
         if serialized_tools:
             request_params["tools"] = serialized_tools
-            request_params["totool_choiceols"] = {"type": "auto", "disable_parallel_tool_use": True}
+            request_params["tool_choice"] = {"type": "auto", "disable_parallel_tool_use": True}
 
         request_params = await self._add_system_prompt_param(
             request_params=request_params, 
