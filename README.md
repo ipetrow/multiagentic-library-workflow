@@ -1,5 +1,5 @@
 # Project Overview
-This project evolves a previous [AI agentic two-step workflow](https://github.com/ipetrow/agentic-bookslog-workflow.git) into an autonomous, multi-agent library management application. It is built around **MCP**, **Anthropic Claude Messages API**, **Agentic Skills**, **SQLite** and **Python**. The LLM capabilities are being utilized through an interactive chat session and further extended by Skills, tools and resources.
+This project evolves a previous [AI agentic two-step workflow](https://github.com/ipetrow/agentic-bookslog-workflow.git) into an autonomous, multi-agent library management application. It is built around **MCP**, **Anthropic Claude Messages API**, **Agentic Skills**, **SQLite** and **Python**. The LLM capabilities are being utilized through an interactive chat session and further extended by Skills, tools and resources. An observability layer is included to provide an insight on application's flow of events.
 
 # Use Case
 The application helps users to manage a digital representation of their personal library and analyze their collection for providing reading habits insights. 
@@ -43,11 +43,13 @@ The application entry point `__main__.py` and codebase is situated in `src/app/`
 - `schemas/`: Schemas describing host tools exposed to the LLM.
 - `tools/`: Logic for managing all the mcp and custom host tools.
 - `domain/`: Contains the main data structures for the application domain.
+- `observability/`: A layer that an insight on application's flow of events during execution.
 
 Additionally, there are several helper directories:
 - `scripts/skills/`: Standalone scripts for managing the Agentic Skills.
 - `skills/`: The Skills used by the LLM.
 - `config/`: Currently contains a single `skills.json` file describing all the skills used by the LLM.
+- `output/`: Contains the output files - generated charts and execution logs.
 
 # Prerequisites
 - Installed Python version 3.14.2 or higher.
@@ -138,6 +140,11 @@ All found data integrity issues are clarified with the user through the active c
 
 ## Dependencies
 The project uses the following external Python modules: **mcp**, **anthropic**, **pydantic**, **matplotlib**, **pandas**, **python-dotenv**.
+
+# Observability
+For each application execution, there is a log file created (in `outputs/logs/`) that lists all the main events - a task (user prompt), agent, tools, LLM request lifecycles and errors. The input and output tokens are also included in the LLM events.
+
+These traces provide an additional layer of confidence that the systes works as expected. Also, this high level overview can help to identify potetial issues easily.
 
 # Running the Project
 ## Setup
